@@ -1,0 +1,345 @@
+Comprehensive Architectural and Curricular Framework for Integrated School Management Systems in the Kenyan Education Ecosystem
+The Kenyan education sector is currently defined by a profound paradigm shift as it transitions from the long-standing 8-4-4 system to the Competency-Based Curriculum (CBC), now increasingly referred to under the broader operational framework of Competency-Based Education (CBE).1 For architects of multiple school management systems (SMS), this transition necessitates a robust, dual-logic engine capable of managing legacy academic structures alongside a highly granular, skill-focused competency framework.4 The challenge is not merely digitizing records but creating a system that aligns with national standards for the National Education Management Information System (NEMIS), the Kenya National Examinations Council (KNEC) assessment portals, and the specialized pathways of the 2026 Senior Secondary transition.7 This report provides an exhaustive analysis of the structural, curricular, and examinational requirements necessary to build an integrated platform for Kenyan primary and secondary institutions.
+Theoretical and Policy Foundations of the Curricular Shift
+To build a system that truly serves the Kenyan market, one must first analyze the fundamental differences between the 8-4-4 system and the CBC. The 8-4-4 system, introduced in 1985, was structured around eight years of primary education, four years of secondary, and four years of university.1 It was essentially a content-based, teacher-centered model where success was measured through high-stakes, summative national examinations—the Kenya Certificate of Primary Education (KCPE) and the Kenya Certificate of Secondary Education (KCSE).2 In this environment, the academic future of a child was often determined by a single examination score at the end of Grade 8 or Form 4.1
+Conversely, the CBC, launched in 2017, follows a 2-6-3-3-3 structure: two years of pre-primary, six years of primary, three years of junior secondary, three years of senior secondary, and a minimum of three years of tertiary education.1 The CBC is learner-centered and skill-based, focusing on seven core competencies: communication and collaboration, critical thinking and problem-solving, imagination and creativity, citizenship, digital literacy, learning to learn, and self-efficacy.1 From a systems design perspective, the CBC rejects the 8-4-4 focus on rote memorization in favor of a demonstration of skills mastery through continuous, multi-source assessments.1
+Feature
+8-4-4 System
+CBC/CBE System
+Philosophical Focus
+Content acquisition and knowledge recall
+Competency development and skill mastery
+Primary Structure
+8 years primary, 4 secondary, 4 university
+2-6-3-3-3 (Pre-Prim, Prim, Junior, Senior, Uni)
+Assessment Model
+100% Summative (End-of-cycle exams)
+40% Formative (SBA) + 60% Summative
+Transition Points
+Exam-based at Grade 8 and Form 4
+Continuous placement based on pathways
+Teacher Role
+Instructor and lecturer
+Facilitator and assessor
+Grading Philosophy
+Ranking and competition
+Mastery and descriptive feedback
+1
+Organizational Structure of Primary and Secondary Education
+A multiple school management system must accommodate the overlapping tiers of the two systems. In the current landscape, many schools operate &quot;Comprehensive&quot; models that host early years, middle school, and junior school under one administration, while secondary schools are transitioning to host the new Senior School.9
+The 8-4-4 Primary and Secondary Tier
+The 8-4-4 system is being phased out, but its logic remains relevant for current high school cohorts in Form 2, 3, and 4.1 At the primary level, 8-4-4 involved eight &quot;Standards&quot; (1 to 8). The primary exit exam, KCPE, was a 500-mark test covering five subjects: English, Kiswahili, Mathematics, Science, and Social Studies/Religious Education.11
+Secondary education under 8-4-4 consists of four years (Form 1 to 4). Students typically study between 7 and 9 subjects selected from six categories.11 The grading is numerical and letter-based, ranging from A (12 points) to E (1 point).18 For a system developer, the 8-4-4 module must support traditional mark books, mean score calculations, and stream rankings.2
+The CBC Framework: Tiers and Key Stages
+The CBC is divided into four main levels, each requiring distinct assessment rubrics and subject configurations.11
+Early Years Education (EYE)
+Early Years Education includes Pre-Primary (PP1 and PP2) and Lower Primary (Grades 1, 2, and 3).11 The focus here is on foundational literacy, numeracy, and social skills. For system architects, this level requires an interface for recording activity-based progress rather than numerical marks.21
+Level
+Learning Areas (Activities)
+Assessment Method
+Pre-Primary
+Language, Mathematical, Creative, Environmental, Religious
+Ongoing observation and portfolios
+Lower Primary
+English, Kiswahili/KSL, Math, Environmental, Religious, Creative, Indigenous Language
+Termly descriptive progress reports
+22
+The 2023 rationalization by the Presidential Working Party on Education Reform (PWPER) reduced the number of learning areas in lower primary from nine to seven to alleviate the workload.24 Environmental Activities now integrates Hygiene and Nutrition, while Creative Activities merges Art, Craft, Music, and Physical Education.24
+Middle School Education
+Middle School comprises Upper Primary (Grades 4, 5, and 6) and Junior School (Grades 7, 8, and 9).10 Grade 6 is the final year of primary education and concludes with the Kenya Primary School Education Assessment (KPSEA).25 Junior School is the transition phase where learners explore a broad range of subjects before specializing in Senior School.11
+Junior School Learning Areas (Grade 7-9)
+Category
+Core/Optional
+English, Kiswahili/KSL, Mathematics
+Core
+Mandatory
+Integrated Science, Health Education
+Science
+Mandatory
+Pre-Technical &amp; Pre-Career Education
+Technical
+Mandatory
+Social Studies, Religious Education
+Humanities
+Mandatory
+Business Studies, Agriculture, Life Skills
+Vocational
+Mandatory
+Sports and Physical Education
+Creative
+Mandatory
+Visual Arts, Performing Arts, Computer Science
+Optional
+Elective
+Foreign/Indigenous Languages
+Optional
+Elective
+11
+Senior School (Grades 10-12)
+Starting in 2026, Senior School becomes the specialization phase.9 Students transition from broad learning to three specialized pathways based on their competencies, interests, and performance in the Kenya Junior School Education Assessment (KJSEA).1
+Senior School Pathways and Specialization Management
+For a multiple school management system, the Senior School module is perhaps the most technically demanding, as it must manage complex subject combinations and track students across over 350 potential careers.2
+The STEM Pathway
+The Science, Technology, Engineering, and Mathematics (STEM) pathway is expected to host approximately 60% of Senior School placements.10 This pathway is further divided into Pure Sciences, Applied Sciences, Technical and Engineering, and Career and Technology Studies.27
+Track
+Sample Elective Subjects
+Linked University Degrees
+Pure Sciences
+Biology, Chemistry, Physics, Core Mathematics
+Medicine, Pharmacy, Actuarial Science
+Applied Sciences
+Agriculture, Home Science, Computer Studies
+Biotechnology, Agribusiness
+Technical/Engineering
+Power Mechanics, Aviation, Building Construction
+Civil/Electrical Engineering, Architecture
+Career &amp; Tech Studies
+Culinary Arts, Hair Dressing, Media Technology
+Vocational diplomas, TVET courses
+9
+The Social Sciences and Arts Pathways
+The Social Sciences pathway focuses on humanities, languages, and business studies, nurturing critical thinkers and societal leaders.9 The Arts and Sports Science pathway focuses on developing talents in performance, design, and athletics, integrating scientific principles like human physiology and kinesiology.27
+Pathway
+Core Subjects (Mandatory for All)
+Pathway Electives (Choose 3)
+Social Sciences
+English, Kiswahili/KSL, Community Service Learning, PE
+History, Geography, Business Studies, Religious Studies
+Arts &amp; Sports
+English, Kiswahili/KSL, Community Service Learning, PE
+Performing Arts, Music, Visual Arts, Sports Science
+9
+The system must allow schools to be categorized as &quot;Triple Pathway&quot; (offering all three), &quot;Double Pathway&quot; (STEM plus one other), or &quot;Single Pathway&quot; (specializing in one).9 This categorization influences how the system manages enrollment and resource allocation.
+Assessment Mechanics: The Formative-Summative Hybrid
+In the CBC, the assessment of a learner is not a one-day event but a continuous data-gathering process.22 System architects must design a database that supports the &quot;Competency Evidence Cycle&quot;.22
+School-Based Assessment (SBA)
+Teachers are required to administer standardized assessments developed by KNEC.30 These include practical projects, performance tasks, and written tests.30 The system must facilitate the following workflow:
+Download Assessment Tools: Schools log into the KNEC CBA portal to download PDF or digital tools.30
+Administration: Teachers guide learners through projects (e.g., in Agriculture or Creative Arts) or administer written tests.30
+Scoring: Teachers use KNEC-provided rubrics and scoring guides.30
+Uploading Outcomes: Scores must be uploaded to the CBA assessment portal within stipulated timelines (e.g., scores for Grade 3 or Grade 7 projects).30
+Cumulative Placement Logic
+The placement of students into Senior School pathways uses a weighted formula that combines three stages of assessment.10
+
+The system must automatically aggregate these scores from different grades to provide a &quot;Placement Readiness Report&quot; for Grade 9 students.5
+The Grading Engine: Numerical and Qualitative Logic
+A robust SMS must support two distinct grading philosophies. The 8-4-4 system relies on a 12-point scale, while the CBC uses achievement levels and point values.18
+Legacy 8-4-4 Grading (Secondary)
+The 8-4-4 secondary grading system converts raw marks into letter grades and points used for university placement through the Kenya Universities and Colleges Central Placement Service (KUCCPS).18
+Grade
+Points
+Percentage Range (Approx)
+University Eligibility
+A
+12
+84% and above
+Highly Competitive (Medicine, Law)
+A-
+11
+80% – 83%
+Competitive Programs
+B+
+10
+75% – 79%
+Standard Professional Degrees
+C+
+7
+60% – 64%
+Minimum University Entry Requirement
+C-
+5
+50% – 54%
+Diploma Entry
+D+
+4
+45% – 49%
+Certificate Entry
+E
+1
+Below 35%
+Vocational/Trade School
+18
+The 4-Point CBC Scale (Lower Primary)
+For early years, the system must eschew percentages and ranking in favor of four proficiency levels.15
+Exceeding Expectation (EE) - 4 Points: Demonstrates skills beyond the required standard and applies them independently.15
+Meeting Expectation (ME) - 3 Points: Has acquired the competency at the expected level with minimal prompting.15
+Approaching Expectation (AE) - 2 Points: Demonstrates partial mastery and requires teacher scaffolding.15
+Below Expectation (BE) - 1 Point: Has not yet demonstrated baseline competency and requires targeted intervention.15
+The 8-Level Point System (Junior Secondary/KJSEA)
+In 2025, for the Kenya Junior School Education Assessment (KJSEA), a more granular 8-level scale has been introduced to ensure accurate placement into specialized Senior School pathways.25
+Major Level
+Sub-Level
+Points
+Percentage Range
+Descriptor
+Exceeding
+EE1
+8
+90% – 100%
+Exceptional / Excellent
+
+EE2
+7
+75% – 89%
+Very Good
+Meeting
+ME1
+6
+58% – 74%
+Good
+
+ME2
+5
+41% – 57%
+Satisfactory
+Approaching
+AE1
+4
+31% – 40%
+Needs Improvement
+
+AE2
+3
+21% – 30%
+Below Average
+Below
+BE1
+2
+11% – 20%
+Well Below Average
+
+BE2
+1
+1% – 10%
+Minimal / Poor Performance
+25
+The SMS must handle the conversion of raw marks into these levels and points automatically, generating reports that reflect these descriptors verbatim to align with KICD philosophy.25
+Administrative Compliance: NEMIS and the UPI
+The National Education Management Information System (NEMIS) is the digital backbone of Kenya's educational administration.7 Any school management system must ensure seamless data compatibility with NEMIS requirements to support school capitation and national identification.39
+The Unique Personal Identifier (UPI)
+NEMIS generates a 6-character alphanumeric code for every learner and staff member.7 This code follows the student through every stage of education.39 A management system must include the following as mandatory database fields:
+Learner Profile: Name (per Birth Certificate), Gender, Date of Birth, and Birth Certificate Entry Number.41
+Identification: The UPI (Unique Personal Identifier) and the Assessment Number (for exam candidates).41
+Contact Info: Parent/Guardian ID numbers, mobile phone numbers, and home addresses.41
+Special Medical/Educational Needs: Fields for conditions like anemia, asthma, or physical/hearing impairments to ensure inclusion and proper resource allocation.11
+NEMIS System Specifications and Compatibility
+For schools to upload data effectively, the SMS should output data in formats compatible with the Ministry of Education's standards.45 The NEMIS portal itself has minimum hardware and software requirements that institutions must meet to utilize the government platform.39
+Requirement
+Minimum Specification
+Hardware
+2.4 GHz processor, 1 GB RAM, 120 GB HDD
+Operating System
+Windows 7/10, iOS (Apple), Android
+Internet Connectivity
+Broadband at least 3G with 2 Mbps dedicated speed
+Output Formats
+Compatibility with Microsoft Office/OpenOffice for data extraction
+Image Capture
+Digital camera for learner photos for profile verification
+39
+Multi-School Architecture and Group Management
+Building a system for &quot;multiple schools&quot; requires a hierarchical multi-tenancy architecture. This allows a central administrative hub to manage multiple branches while maintaining the data isolation required for each school.4
+Centralized Dashboard and Global Reporting
+The group administrator (e.g., a director of a chain of schools) requires a dashboard that provides a real-time, consolidated view of all institutions.4 Key features include:
+Aggregated Enrollment: Total students across all branches, categorized by grade and pathway.8
+Financial Health: Consolidated fee collection, outstanding balances across schools, and budget management.4
+Compliance Tracking: Monitoring which schools have completed their SBA uploads to the KNEC portal or their registration updates on NEMIS.6
+Individual School Autonomy
+Each school within the group must have its own secure &quot;tenant&quot; where local administrators handle daily operations.48
+Admissions: Recording local intake and generating admission numbers while checking for existing UPIs on the national registry.7
+Timetabling: Automated generation of class schedules based on teacher workloads and teaching areas (subjects a teacher is trained in).39
+Staff Records: Tracking teacher responsibilities, TSC numbers, and mobility history (transfers between institutions).39
+Core Modules for an Integrated Kenyan SMS
+To be market-ready, the SMS must include modules that address the non-academic &quot;admin chaos&quot; often found in Kenyan institutions.6
+Financial Management and Fee Collection
+Financial transparency is critical for both the school and parents. The system must integrate with local payment gateways like M-Pesa Paybill and commercial bank APIs.4
+Automated Invoicing: Instantly billing thousands of students based on custom fee structures for day, boarding, or transport services.6
+Payment Reconciliation: Real-time updates of student ledgers upon payment, with automated SMS receipts sent to parents.4
+Capitation Tracking: Monitoring the disbursement of government funds (e.g., KES 22,244 per secondary student) based on the enrollment data submitted to NEMIS.8
+The CBC Academic and Behavioral Module
+The academic module must be built specifically for CBC's formative nature.5
+Strand-Level Tracking: Teachers record progress for each &quot;sub-strand&quot; rather than a single termly mark.22
+Holistic Portfolios: A digital repository for student projects, practical activity photos, and oral assessment recordings.5
+Behavioral Tracking: CBC focuses on &quot;core values&quot; and &quot;behavioral insights.&quot; The system must allow teachers to record narrative comments on a student’s personal and social development, which are then integrated into termly reports.5
+Communication and Parent Engagement
+Parental involvement is a pillar of the CBC framework.5 The SMS should bridge the communication gap through:
+Parent Portals: 24/7 access to progress reports, attendance logs, and behavior insights.6
+Instant Notifications: Real-time alerts via SMS, WhatsApp, and Email for emergencies, fee balances, or upcoming school events like project submissions.45
+Digital Notice Boards: Sharing best practices and school announcements with staff and parents simultaneously.49
+Examinational Cycles and National Transition Milestones
+A management system for multiple schools must be designed around the annual academic calendar issued by the Ministry of Education.10
+The Grade 6 (KPSEA) Milestone
+At Grade 6, students sit for the KPSEA to establish learning outcomes at the end of the primary tier.26 The system must support the school in:
+Generating the KPSEA Nominal Roll for registration.42
+Managing school-based practicals in subjects like Creative Arts and Social Studies.26
+Storing the national result slips for future placement calculations.25
+The Grade 9 (KJSEA) and Senior School Selection
+Grade 9 is the most critical transition point in the CBC.1 By 2025, the system must facilitate:
+Pathway Counseling: Helping students choose STEM, Social Sciences, or Arts based on their historical performance trends in the system.10
+School Selection: Schools must guide students to select three local day schools, three boarding schools in their home county, and six boarding schools in other counties.10
+Placement Data Preparation: Aggregating KPSEA, Grade 7/8 SBA, and Grade 9 KJSEA scores to ensure a smooth transition into Senior Secondary School starting January 2026.10
+System Security, Data Privacy, and Business Continuity
+In a multi-school environment, data integrity and security are paramount. The system must comply with both local (Data Protection Act) and international (GDPR) standards.48
+Access Control and Authentication
+Role-Based Access Control (RBAC): Only authorized users can access specific levels of information (e.g., a bursar sees fees, but not medical records; a teacher sees academic data for their assigned classes).45
+Data Encryption: All communications and stored data (especially UPIs and birth certificate numbers) should be encrypted.48
+Cloud Infrastructure and Scalability
+A cloud-based platform ensures that multiple schools can access the system simultaneously without individual server maintenance costs.4
+Reliability: Hosting on secure infrastructure like AWS or Azure guarantees uptime and regular data backups.5
+Scalability: The system should grow with the school network, easily accommodating new branches or a massive influx of students during admission cycles.4
+Synthesis: Designing for the Future of Kenyan Education
+The successful school management system for the Kenyan market will be one that seamlessly blends administrative efficiency with pedagogical support.5 It must move away from the &quot;mark-entry&quot; legacy of the 8-4-4 system and embrace the &quot;competency-tracking&quot; philosophy of the CBC.3 For a multiple school management system, the objective is to create a &quot;single source of truth&quot; that allows school owners, principals, teachers, and parents to collaborate on the holistic development of every learner.4
+By integrating national system compatibility (NEMIS/KNEC), supporting specialized Senior School pathways, and providing robust financial and communication tools, the platform will empower institutions to thrive in the digital age.5 As Kenya moves toward its first full CBC transition in 2026, technology will be the key enabler in ensuring that talent is identified early, competencies are measured accurately, and resources are allocated equitably across the nation's educational landscape.2
+Works cited
+The New Competency Based Curriculum (CBC) in Kenya - Kiwimbi International, accessed March 27, 2026, https://kiwimbi.org/blog/the-new-competency-based-curriculum-cbc-in-kenya/
+8-4-4 vs. CBC/CBE: Comparing Kenya's Education Systems in 2026 - Dreams Hill School, accessed March 27, 2026, https://dreamshillschool.sc.ke/news/8-4-4-vs-cbc-cbe-comparing-kenyas-education-systems-in-2026/
+Paradox in Kenya's Education System: Transitioning from 8-4-4 Education System to CBC to CBE - - KENPRO, accessed March 27, 2026, https://kenpro.org/paradox-in-kenyas-education-system-transitioning-from-8-4-4-education-system-to-cbc-to-cbe/
+School, College and University Management Software - Azania Systems, accessed March 27, 2026, https://azaniasystems.com/solutions/school-management-system-in-nairobi-kenya/
+Best CBC School Management System in Kenya | Cloud School System, accessed March 27, 2026, https://cloudschool.co.ke/2024/12/15/cbc-school-management-system-in-kenya/
+The Best School Management System in Kenya 2026, accessed March 27, 2026, https://itkenya.com/software-solution/school-management-system/
+Nemis Frequently Asked Questions | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/778739281/Nemis-Frequently-Asked-Questions
+Application of National Education Management System to Student Enrollment and Secondary School Administration in Bungoma County's, Kenya - Kibabii University, accessed March 27, 2026, https://erepository.kibu.ac.ke/bitstreams/ae105fad-0b96-4244-8c4c-54a560aecd7a/download
+Senior Secondary Pathways in CBC | PDF | Science - Scribd, accessed March 27, 2026, https://www.scribd.com/document/837420831/CBC-Pathways
+Senior School Selection Process in Kenya under CBE, accessed March 27, 2026, https://dreamshillschool.sc.ke/news/senior-school-selection-process-in-kenya-under-cbe/
+8-4-4 Curriculum in Kenya - Wikipedia, accessed March 27, 2026, https://en.wikipedia.org/wiki/8-4-4_Curriculum_in_Kenya
+Comparing 8-4-4 and CBC in Kenya | PDF | Curriculum | Educational Assessment - Scribd, accessed March 27, 2026, https://www.scribd.com/document/790288145/Emp-211-Group-Assgt
+Core Values in Kenya's CBC Framework | PDF | Educational Assessment - Scribd, accessed March 27, 2026, https://www.scribd.com/document/919203352/Kenyan-Cbc-Framework
+CURRICULUM DESIGNS - KICD, accessed March 27, 2026, https://kicd.ac.ke/wp-content/uploads/2018/02/PP-1-Curriculum-Designs-Dec-2017C-1-min.pdf
+School Marks Explained - Friends of Ngong Road, accessed March 27, 2026, https://ngongroad.org/sponsor-portal/school-marks-explained/
+KCSE Subject Selection Guidelines | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/811110532/Subject-Groups
+guidelines on administration of the 2025 kcse (july series) examination - KNEC, accessed March 27, 2026, https://www.knec.ac.ke/wp-content/uploads/2025/01/GUIDELINES-ON-ADMINISTRATION-OF-THE-2025-KCSE-JULY-EXAM-CDEs.pdf
+Kenyan Secondary School Grading System | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/651327279/Grading-System-for-Kenyan-Secondary-Schools
+Kenya KCSE Grading: Mean Grade, Points, and University Cut-Off Marks - OpenEduCat, accessed March 27, 2026, https://openeducat.org/articles/kenya-kcse-grading-mean-grade-explained/
+Competency Based Assessment Framework - KNEC, accessed March 27, 2026, https://www.knec.ac.ke/wp-content/uploads/2021/06/CBA-Age-Based-Regular-Framework.pdf
+Report Card Template | PDF | Lord's Prayer - Scribd, accessed March 27, 2026, https://www.scribd.com/document/999106192/Report-Card-Template
+Kenya CBC Assessment — Competency-Based Curriculum ..., accessed March 27, 2026, https://openeducat.org/zh/gradebook/k12/kenya/cbc-assessment/
+CBC School Support - The Institute of Teachers Professional Development, accessed March 27, 2026, https://www.itpd.ac.ke/school-support/
+Competency-Based Curriculum Assessment Guide | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/983417088/GRADE-1-A4-CBC-ASSESSMENT-BOOK-3
+Kenya's 2025 CBC Grading System Explained | PDF | Learning - Scribd, accessed March 27, 2026, https://www.scribd.com/document/929425658/CBC-CBE-Grading-Assessment-System-in-Kenya-2025
+Kenya Primary School Education Assessment (KPSEA), National Report, 2023. - NAC, accessed March 27, 2026, https://nac.knec.ac.ke/wp-content/uploads/2024/03/KIPSEA-Report-2023.pdf
+Detailed Overview of CBE/CBC Pathways in Kenya's Senior School - Dreams Hill School, accessed March 27, 2026, https://dreamshillschool.sc.ke/news/detailed-overview-of-cbe-cbc-pathways-in-kenyas-senior-school/
+Junior Secondary Assessment Report Form | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/663482416/JSS-REPORT-FORM
+Pathways and Subjects in Senior Schools | PDF | The Arts | Science - Scribd, accessed March 27, 2026, https://www.scribd.com/document/787204953/PATHWAYS-AND-SUBJECTS-IN-SENIOR-SCHOOLS
+Administration of Sba | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/presentation/859347094/07-Administration-of-Sba
+Administration of SCHOOL BASED ASSESSMENT August 2025 | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/901261737/14-Administration-of-SCHOOL-BASED-ASSESSMENT-August-2025
+Grade-3-4-and-5-SBAs.pdf - KNEC, accessed March 27, 2026, https://www.knec.ac.ke/wp-content/uploads/2024/03/Grade-3-4-and-5-SBAs.pdf
+timetable &amp; instructions for the 2025 school based assessment for the diploma in secondary teacher education (year 2 – sba 2) - THE KENYA NATIONAL EXAMINATIONS COUNCIL, accessed March 27, 2026, https://knec.ac.ke/wp-content/uploads/2025/05/014__dste_year_2_sba_tt_2025_14_apr.pdf.pdf
+CIRCULAR-ON-ADMINISTRATION-OF-2025-SBAs-WRITTEN-TESTS.pdf - KNEC, accessed March 27, 2026, https://www.knec.ac.ke/wp-content/uploads/2025/08/CIRCULAR-ON-ADMINISTRATION-OF-2025-SBAs-WRITTEN-TESTS.pdf
+School Marks Explained - Friends of Ngong Road, accessed March 27, 2026, https://ngongroad.org/program/education/school-marks-explained/
+Grading System in Kenya - Scholaro, accessed March 27, 2026, https://www.scholaro.com/db/countries/Kenya/Grading-System
+Kenya CBC Gradebook Software | Competency-Based Curriculum Grading - OpenEduCat, accessed March 27, 2026, https://openeducat.org/gradebook/k12/kenya/
+CBC Learner Progress Report Template | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/906056273/Learner-s-Report-Form-Cbc
+All you need to know about NEMIS - The National Education Management Information System | Bunifu ERP | An automation software for Schools &amp; Colleges, accessed March 27, 2026, https://erp.bunifu.co.ke/2018/02/28/all-you-need-to-know-about-nemis-the-national-education-management-information-system/
+Schools to adopt Education Information System by February 20 - The Star, accessed March 27, 2026, https://www.the-star.co.ke/sasa/entertainment/2018-01-29-schools-to-adopt-education-information-system-by-february-20
+NEMIS Grade 7 Data Capture Form 2025 | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/867276407/Nemis-Data-Capture-Form-Junior-School-Year-2025
+NEMIS Student Registration Form | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/839414765/NEMIS-Student-Data-Capture-Form
+NEMIS Student Data Capture Form | PDF | Social Science | Law - Scribd, accessed March 27, 2026, https://www.scribd.com/document/657022653/NEMIS-Student-Data-Capture-Form
+New Student Registration in NEMIS | PDF - Scribd, accessed March 27, 2026, https://www.scribd.com/document/826636537/MINISTRY-OF-EDUCATION
+How to Use the Best School Management Software in Kenya – Cloud School System, accessed March 27, 2026, https://cloudschool.co.ke/2024/10/01/how-to-use-cloud-school-system/
+School Management System: Home - Series®, accessed March 27, 2026, https://schools.series.co.ke/
+Best School Management System in Kenya (2026 Guide) - EBingwa, accessed March 27, 2026, https://ebingwa.co.ke/blog/best-school-management-system-in-kenya
+Skoola School Management: School Management Made Easy, accessed March 27, 2026, https://myskoola.com/
+School Management System: Improving Student-Teacher-Parent Communication, accessed March 27, 2026, https://cloudschool.co.ke/2024/10/23/student-teacher-parent-communication/
+Property Management System in Kenya - all in one smart dashboard. - Digital Marketing, accessed March 27, 2026, https://wayvarndigital.co.ke/school-management-system/
+Grade 1 CBC Assessment Report | PDF | Lord's Prayer | Literacy - Scribd, accessed March 27, 2026, https://www.scribd.com/document/852266603/CBC-LOWER-ASSESSMENT
+Kenya launched a new information management system in schools | News, accessed March 27, 2026, https://www.globalpartnership.org/news/kenya-launched-new-information-management-system-schools

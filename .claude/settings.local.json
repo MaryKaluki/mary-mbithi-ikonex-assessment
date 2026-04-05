@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(php artisan:*)",
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"hr@msingi.ac.ke\\\\\",\\\\\"password\\\\\":\\\\\"Hr@2026\\\\\"}\")"
+    ]
+  }
+}

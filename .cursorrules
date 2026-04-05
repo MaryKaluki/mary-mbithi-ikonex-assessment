@@ -1,0 +1,40 @@
+# Skullu 2.o - Development Rules Configuration
+
+## Architecture & Multi-Tenancy Rules
+- **Strict Tenant Scope:** Every operational database table created MUST include `school_id` as a string column.
+- **Foreign Key Constraint:** Always use `$table->foreign('school_id')->references('id')->on('schools')->cascadeOnDelete();`
+- **Model Trait:** Any new Eloquent model that handles tenant data MUST include the `use BelongsToTenant;` trait. No exceptions.
+## System Rules & Constraints
+1. **No Emojis:** Absolutely zero emojis in any code, comments, Markdown, or commit messages.
+2. **Context Requirement:** Add `<a11y>` and `<i18n>` tags to your XML prompt structure. AI must not skip accessibility or internationalization (Kenyan context/Swahili).
+3. **Data Persistence & Migrations:** 
+    - **NEVER** use `php artisan migrate:fresh` or `migrate:refresh`. These commands are strictly forbidden as they wipe user data.
+    - **Incremental Changes only:** To update the database schema, ALWAYS create a new migration (`php artisan make:migration`) that alters or adds to the existing tables.
+    - **Maintain History:** The migration history must remain intact to preserve schools, users, and operational data across all updates.
+
+## 12 Explicit AI Engagement Rules
+1. **Act as a Specialized Assistant, Not a Replacement:** ("Engineer-in-the-Loop") Validate all code for logic, security, and architectural fit. Divide and Conquer complex tasks. Maintain **Supervised Execution**.
+2. **Context is King:** Provide detailed Project Context, including technical stack (Laravel 10, React 17) and use System Prompting (e.g., `<example>`, `<standards>`, `<project_spec>`). Use `.rules` files.
+3. **Rigorous Validation and Security:** Never Blindly Trust Outputs. Perform Sanity Checks. Secure Sensitive Data (no API keys). Use Test-Driven Development (TDD) with AI.
+4. **Proactive Workflow Integration (2026 Trends):** Use Agentic Workflows. Automate Documentation (docstrings, README, APIs). Apply AI-Driven Refactoring for legacy code.
+7. **Version Control & Change Management:** Commit before applying AI changes. Write meaningful commit messages (solve problems, no "AI fix"). Exclude AI context fields with `.gitignore`.
+8. **Prompt Versioning:** Store best-performing prompts in a `/prompts` folder. Track prompt changelogs.
+9. **Failure Mode Awareness:** Define a "stop condition" (escalate manual past 3 iterations). Avoid the "AI rabbit hole". Recognize context window drift; re-inject this `.rules` file mid-conversation if needed.
+10. **Output Ownership & IP Hygiene:** Keep code strictly proprietary; understand Enterprise constraints.
+11. **Performance Budgeting:** Always benchmark output. Ask: "What is the Big-O complexity?" For SaaS, this must respond in under 200ms.
+12. **Accessibility & Internationalisation as Defaults:** AI skips these unless prompted. Always enforce `<a11y>` and `<i18n>`.
+
+## System Context: Kenyan Curriculum (2026 Status)
+- **Primary & Junior (CBC):** 8-4-4 is completely phased out. System uses CBC.
+    - Early Years (PP1-Grade 3): 4-Point CBC Scale (EE, ME, AE, BE).
+    - Middle/Junior School: 8-Level Point Scale (EE1, EE2, ME1, ME2, AE1, AE2, BE1, BE2).
+    - Assessments: KPSEA (Grade 6) and KJSEA (Grade 9).
+- **Senior School (Hybrid):** CBC Senior School Pathways (STEM, Arts & Sports Science, Social Sciences). Legacy 8-4-4 tracking for current Forms 2, 3, and 4.
+- **Grading Constraints:** Retain the 12-point scaling system (A-E) alongside CBC achievement point levels.
+- **NEMIS & UPI:** Strict compatibility with NEMIS. All profiles must record `UPI (Unique Personal Identifier)`, `Birth Certificate Entry Number`, and track data according to government standard specifications.
+
+## UI/UX Design Preferences
+1. **Prioritize Simple Lists:** Prefer simple, clean list structures over card-based layouts to maximize screen real estate and ensure a minimalist, professional aesthetic. Avoid unnecessary cards for list data.
+
+## Documentation Requirements
+- Must document ALL changes in `SYSTEM_DOCUMENTATION.md` under the "Change Log", denoting *what* was changed and *when*. The md file strictly begins with "what this system is and everything about it".

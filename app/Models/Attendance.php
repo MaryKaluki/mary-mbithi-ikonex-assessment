@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Model;
+
+class Attendance extends Model
+{
+    use BelongsToTenant;
+
+    protected $guarded = [];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function markedBy()
+    {
+        return $this->belongsTo(User::class, 'marked_by');
+    }
+}
