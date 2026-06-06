@@ -52,5 +52,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Expose HTTP port
 EXPOSE 80
 
-# Start web server
-CMD ["apache2-foreground"]
+# Start web server (automating migrations and seeding on container boot)
+CMD php artisan migrate --force && php scratch/reseed_interview_data.php && apache2-foreground
