@@ -76,9 +76,6 @@ return [
             'prefix_indexes' => true,
             'schema' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
-            'options' => class_exists('PDO') && defined('PDO::PGSQL_ATTR_SSL_MODE') ? [
-                PDO::PGSQL_ATTR_SSL_MODE => env('DB_SSLMODE', 'prefer'),
-            ] : [],
         ],
 
         'sqlsrv' => [
