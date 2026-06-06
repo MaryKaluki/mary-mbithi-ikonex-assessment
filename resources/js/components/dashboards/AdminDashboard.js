@@ -41,7 +41,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Main grid */}
-            <div className="flex gap-3 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
                 {/* Latest Notices */}
                 <div className="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm flex flex-col min-h-0">
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="w-64 flex-shrink-0 flex flex-col gap-3">
+                <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-3">
                     <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
                         <div className="px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quick Actions</span>

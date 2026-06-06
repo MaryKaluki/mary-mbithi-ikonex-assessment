@@ -63,7 +63,7 @@ const HrDashboard = () => {
             </div>
 
             {/* Main grid */}
-            <div className="flex gap-3 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
                 {/* Left column */}
                 <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0">

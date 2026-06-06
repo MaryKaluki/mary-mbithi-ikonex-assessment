@@ -43,7 +43,7 @@ const AccountantDashboard = () => {
             </div>
 
             {/* Main grid */}
-            <div className="flex gap-3 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
                 {/* Recent Transactions */}
                 <div className="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm flex flex-col min-h-0">

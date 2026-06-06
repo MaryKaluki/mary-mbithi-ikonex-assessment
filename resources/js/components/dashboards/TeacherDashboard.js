@@ -52,10 +52,10 @@ const TeacherDashboard = () => {
             </div>
 
             {/* Main grid */}
-            <div className="flex gap-3 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
                 {/* Today's schedule */}
-                <div className="w-72 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div className="w-full md:w-72 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                     <div className="flex-shrink-0 bg-slate-800 dark:bg-slate-900">
                         <div className="px-4 py-2.5 flex items-center justify-between">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Today's Schedule</span>
