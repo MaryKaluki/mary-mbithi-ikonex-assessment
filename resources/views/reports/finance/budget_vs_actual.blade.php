@@ -61,5 +61,5 @@
     <tr><td colspan="2">TOTALS</td><td class="num">{{ number_format(($s['total_budget'] ?? 0) / 100, 2) }}</td><td class="num">{{ number_format(($s['total_actual'] ?? 0) / 100, 2) }}</td><td colspan="3">{{ $s['over_budget'] ?? 0 }} categories over budget</td></tr>
   </tfoot>
 </table>
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
 </body></html>

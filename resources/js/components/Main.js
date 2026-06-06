@@ -380,7 +380,7 @@ function Main() {
     const [primaryColor, setPrimaryColor] = useState(() => localStorage.getItem('primaryColor') || '#9333ea');
     const [themeStyle, setThemeStyle] = useState(() => localStorage.getItem('themeStyle') || 'accented');
     const [schoolLogo, setSchoolLogo] = useState(() => localStorage.getItem('schoolLogo') || null);
-    const [schoolName, setSchoolName] = useState(() => localStorage.getItem('schoolName') || 'Skullu School System');
+    const [schoolName, setSchoolName] = useState(() => localStorage.getItem('schoolName') || 'Ikonex School System');
     const [isLoading, setIsLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

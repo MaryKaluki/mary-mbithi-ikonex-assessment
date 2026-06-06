@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Storage;
  *
  * This service handles:
  *  1. QBO OAuth2 flow (get auth URL, exchange code, refresh token)
- *  2. Syncing Skullu financial records → QBO entities
+ *  2. Syncing Ikonex financial records → QBO entities
  *  3. CSV export of any financial dataset
  *
- * QBO is treated as a read-only mirror.  Skullu is always the master of truth.
+ * QBO is treated as a read-only mirror.  Ikonex is always the master of truth.
  *
  * Environment variables needed (.env):
  *   QBO_CLIENT_ID
@@ -69,7 +69,7 @@ class TransactionSyncService
      *
      * @param  string $code       OAuth2 code from QBO callback
      * @param  string $realmId    QBO company (realm) ID
-     * @param  string $schoolId   Skullu school_id
+     * @param  string $schoolId   Ikonex school_id
      */
     public function handleCallback(string $code, string $realmId, string $schoolId): array
     {
@@ -254,7 +254,7 @@ class TransactionSyncService
                     'PaymentMethodRef' => ['value' => $this->mapPaymentMethod($p->payment_method)],
                     'TotalAmt'         => number_format($p->amount / 100, 2),
                     'TxnDate'          => $p->payment_date,
-                    'PrivateNote'      => "Skullu receipt: {$p->receipt_number} | Invoice: {$p->invoice_number}",
+                    'PrivateNote'      => "Ikonex receipt: {$p->receipt_number} | Invoice: {$p->invoice_number}",
                     'CustomerRef'      => ['value' => '1', 'name' => $p->first_name . ' ' . $p->last_name],
                     'DepositToAccountRef' => ['value' => '35'], // Income account — configurable
                     'Line'             => [[
@@ -313,7 +313,7 @@ class TransactionSyncService
             try {
                 $payload = [
                     'TxnDate'     => $ex->expense_date,
-                    'PrivateNote' => "Skullu expense: {$ex->expense_number}",
+                    'PrivateNote' => "Ikonex expense: {$ex->expense_number}",
                     'AccountRef'  => ['value' => '7', 'name' => $ex->category_name ?? 'General Expenses'],
                     'TotalAmt'    => number_format($ex->amount / 100, 2),
                     'Line'        => [[
@@ -370,7 +370,7 @@ class TransactionSyncService
             try {
                 $payload = [
                     'TxnDate'     => $t->transfer_date ?? now()->toDateString(),
-                    'PrivateNote' => "Skullu transfer: {$t->transfer_number}",
+                    'PrivateNote' => "Ikonex transfer: {$t->transfer_number}",
                     'Line'        => [
                         [   // Debit the destination account
                             'JournalEntryLineDetail' => [

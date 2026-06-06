@@ -90,5 +90,5 @@
   </tfoot>
 </table>
 
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Annual Report {{ $data['year'] ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Annual Report {{ $data['year'] ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
 </body></html>

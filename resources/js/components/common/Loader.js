@@ -66,7 +66,7 @@ export const SplashLoader = ({ schoolName, schoolLogo }) => {
                 )}
                 <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white dark:border-black animate-pulse"></div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 animate-pulse">{schoolName || 'Skullu 2.0'}</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 animate-pulse">{schoolName || 'Ikonex 2.0'}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 tracking-widest uppercase">Initializing System...</p>
             <div className="w-48 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                 <div className="h-full bg-primary animate-progress-flow"></div>

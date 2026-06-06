@@ -1,4 +1,4 @@
-# Skullu 2.o - System Documentation
+# Ikonex 2.o - System Documentation
 
 ## Change Log
 
@@ -102,7 +102,7 @@
 ---
 
 ## 1. System Overview
-Skullu 2.o is a professional, multi-tenant School Management System (SMS) built for Kenyan educational institutions to handle the transition from the legacy 8-4-4 system to the Competency-Based Curriculum (CBC / CBE).
+Ikonex 2.o is a professional, multi-tenant School Management System (SMS) built for Kenyan educational institutions to handle the transition from the legacy 8-4-4 system to the Competency-Based Curriculum (CBC / CBE).
 
 It provides a dual-logic engine capable of managing legacy academic structures alongside a highly granular, skill-focused competency framework.
 

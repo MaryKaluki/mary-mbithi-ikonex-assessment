@@ -74,5 +74,5 @@
 <p style="font-weight:bold; border-top: 2px solid #2d3748; padding-top:6px; margin-top:8px;">
   GRAND TOTAL: {{ $total['count'] ?? 0 }} invoices &mdash; KES {{ number_format(($total['amount'] ?? 0) / 100, 2) }}
 </p>
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
 </body></html>

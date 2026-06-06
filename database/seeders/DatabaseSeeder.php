@@ -19,10 +19,10 @@ class DatabaseSeeder extends Seeder
     {
         // ── 1. Platform Admin ─────────────────────────────────────────────────
         User::firstOrCreate(
-            ['email' => 'admin@skullu.com'],
+            ['email' => 'admin@ikonex.com'],
             [
                 'name'      => 'Platform Admin',
-                'password'  => Hash::make('Skullu@2026'),
+                'password'  => Hash::make('Ikonex@2026'),
                 'school_id' => null,
                 'role'      => 'platform_admin',
             ]

@@ -241,7 +241,7 @@ const PayslipViewerModal = ({ id, onClose }) => {
                         <div ref={printRef} className="max-w-3xl mx-auto bg-white p-8 md:p-12 shadow-sm rounded-lg border border-gray-200">
                             <div className="flex flex-col md:flex-row justify-between md:items-start border-b-[3px] border-indigo-950 pb-4 mb-6">
                                 <div>
-                                    <div className="text-2xl font-black text-indigo-950 uppercase tracking-tight">SKULLU SCHOOL SYSTEM</div>
+                                    <div className="text-2xl font-black text-indigo-950 uppercase tracking-tight">IKONEX SCHOOL SYSTEM</div>
                                     <div className="text-[10px] text-gray-500 font-bold tracking-[0.15em] uppercase mt-1">Official Payslip — Confidential</div>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-left md:text-right">

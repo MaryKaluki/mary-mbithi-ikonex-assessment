@@ -781,7 +781,7 @@ class FinanceReportController extends Controller
             return response()->json(['message' => "Unknown report type: {$type}"], 404);
         }
 
-        $filename = "skullu-{$type}-" . date('Y-m-d') . '.csv';
+        $filename = "ikonex-{$type}-" . date('Y-m-d') . '.csv';
         $rows     = $data['rows'];
         $headers  = $data['headers'];
 
@@ -824,7 +824,7 @@ class FinanceReportController extends Controller
         $pdf->loadHTML($html);
         $pdf->setPaper('A4', 'portrait');
 
-        $filename = "skullu-{$type}-" . date('Y-m-d') . '.pdf';
+        $filename = "ikonex-{$type}-" . date('Y-m-d') . '.pdf';
 
         // Log the report generation
         DB::table('financial_reports')->insert([

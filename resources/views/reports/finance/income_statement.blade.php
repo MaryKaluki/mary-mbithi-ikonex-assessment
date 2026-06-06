@@ -70,5 +70,5 @@
   <div class="surplus-lbl">{{ $surplus >= 0 ? 'Net Surplus' : 'Net Deficit' }}</div>
 </div>
 
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
 </body></html>

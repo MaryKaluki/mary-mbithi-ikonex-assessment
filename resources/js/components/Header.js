@@ -16,7 +16,7 @@ const Header = ({ darkMode, toggleDarkMode, onLogout, toggleSidebar, schoolName,
                 )}
                 <div className="min-w-0">
                     <h2 className={`text-lg md:text-xl font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>Dashboard</h2>
-                    <p className={`text-xs md:text-sm hidden sm:block truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{schoolName || 'Skullu School System'}</p>
+                    <p className={`text-xs md:text-sm hidden sm:block truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{schoolName || 'Ikonex School System'}</p>
                 </div>
             </div>
 

@@ -88,7 +88,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                     </svg>
                                 </div>
-                                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Skullu 2.0</h1>
+                                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Ikonex 2.0</h1>
                                 <p className="text-primary mt-1 text-sm font-bold uppercase tracking-wider">Developer: Mary Mbithi</p>
                             </div>
 
@@ -155,7 +155,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                         </div>
 
                         <p className="mt-8 text-center text-xs text-gray-400 dark:text-gray-600">
-                            &copy; {new Date().getFullYear()} Skullu Education Systems. All rights reserved.
+                            &copy; {new Date().getFullYear()} Ikonex Education Systems. All rights reserved.
                         </p>
                     </div>
 
@@ -339,7 +339,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                                                 <p><span className="text-slate-500"># 1. Install Composer backend dependencies</span><br/>composer install</p>
                                                 <p><span className="text-slate-500"># 2. Install NPM frontend packages</span><br/>npm install</p>
                                                 <p><span className="text-slate-500"># 3. Create env file and generate encryption key</span><br/>cp .env.example .env<br/>php artisan key:generate</p>
-                                                <p><span className="text-slate-500"># 4. Set up database credentials in .env</span><br/><span className="text-slate-400">DB_DATABASE=skullu_db</span><br/><span className="text-slate-400">DB_USERNAME=root</span><br/><span className="text-slate-400">DB_PASSWORD=your_password</span></p>
+                                                <p><span className="text-slate-500"># 4. Set up database credentials in .env</span><br/><span className="text-slate-400">DB_DATABASE=ikonex_db</span><br/><span className="text-slate-400">DB_USERNAME=root</span><br/><span className="text-slate-400">DB_PASSWORD=your_password</span></p>
                                                 <p><span className="text-slate-500"># 5. Run database migrations</span><br/>php artisan migrate</p>
                                                 <p><span className="text-slate-500"># 6. Seed assessment data (creates classes, subjects, students &amp; demo marks)</span><br/><span className="text-emerald-400">php scratch/reseed_interview_data.php</span></p>
                                                 <p><span className="text-slate-500"># 7. Compile frontend assets for production</span><br/>npm run prod</p>
@@ -369,7 +369,7 @@ const LoginForm = ({ onLoginSuccess }) => {
 {`server {
     listen 80;
     server_name portal.ikonexacademy.com;
-    root /var/www/skullu/public;
+    root /var/www/ikonex/public;
 
     index index.php;
     charset utf-8;
@@ -391,9 +391,9 @@ const LoginForm = ({ onLoginSuccess }) => {
                                                     <pre className="bg-slate-900 text-slate-300 font-mono text-[10px] p-3 rounded-lg overflow-x-auto mt-1 max-h-36 leading-normal">
 {`<VirtualHost *:80>
     ServerName portal.ikonexacademy.com
-    DocumentRoot /var/www/skullu/public
+    DocumentRoot /var/www/ikonex/public
 
-    <Directory /var/www/skullu/public>
+    <Directory /var/www/ikonex/public>
         AllowOverride All
         Require all granted
     </Directory>
@@ -410,10 +410,10 @@ const LoginForm = ({ onLoginSuccess }) => {
                                             </p>
                                             <div className="bg-slate-900 text-slate-300 font-mono text-[10px] p-3 rounded-lg overflow-x-auto">
                                                 <p className="text-slate-500"># Set group ownership to web server user (www-data or apache)</p>
-                                                <p>sudo chown -R www-data:www-data /var/www/skullu</p>
+                                                <p>sudo chown -R www-data:www-data /var/www/ikonex</p>
                                                 <p className="text-slate-500"># Grant write permissions to storage and bootstrap cache</p>
-                                                <p>sudo chmod -R 775 /var/www/skullu/storage</p>
-                                                <p>sudo chmod -R 775 /var/www/skullu/bootstrap/cache</p>
+                                                <p>sudo chmod -R 775 /var/www/ikonex/storage</p>
+                                                <p>sudo chmod -R 775 /var/www/ikonex/bootstrap/cache</p>
                                             </div>
                                         </div>
 

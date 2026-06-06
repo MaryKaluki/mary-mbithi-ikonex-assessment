@@ -1,8 +1,8 @@
-# Skullu 2.0 - Super Admin Pages Audit
+# Ikonex 2.0 - Super Admin Pages Audit
 
 ## System Overview
 
-**Skullu 2.0** is a multi-tenant School Management System (SMS) targeting Kenyan schools. It is built on:
+**Ikonex 2.0** is a multi-tenant School Management System (SMS) targeting Kenyan schools. It is built on:
 - **Backend:** Laravel 10+, PHP 8.2, Sanctum auth, multi-tenant per-school isolation
 - **Frontend:** React 17 (SPA via HashRouter), Tailwind CSS, Axios
 - **Curriculum:** Supports both legacy 8-4-4 and the new CBC/CBE (2-6-3-3-3) frameworks
@@ -157,7 +157,7 @@ Save Marks shows toast only - does NOT call `POST /api/admin/exams/{exam}/marks`
 ---
 
 #### 10. System Settings - SystemSettings.js - PRIORITY MEDIUM
-**Problem:** Save Changes only shows toast (no API). Defaults `admin@skullu.com` and fake phone. Academic year dropdown is static. Settings only saved to localStorage - not the DB.
+**Problem:** Save Changes only shows toast (no API). Defaults `admin@ikonex.com` and fake phone. Academic year dropdown is static. Settings only saved to localStorage - not the DB.
 **Fix:**
 - API: `GET /api/admin/settings` -> `SettingsController@index`
 - API: `POST /api/admin/settings` -> `SettingsController@update`

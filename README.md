@@ -1,4 +1,4 @@
-# Skullu 2.0 — School ERP Management System
+# Ikonex 2.0 — School ERP Management System
 
 > A powerful, multi-tenant School Enterprise Resource Planning (ERP) platform built for Kenyan schools, supporting the CBC curriculum and 8-4-4 hybrid models.
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-**Skullu 2.0** is a full-featured, role-based school management system designed to streamline every aspect of school administration — from student admissions and fee collection to transport logistics, HR management, and secure document sharing.
+**Ikonex 2.0** is a full-featured, role-based school management system designed to streamline every aspect of school administration — from student admissions and fee collection to transport logistics, HR management, and secure document sharing.
 
 Built on **Laravel 10+** (backend) and **React 17+** (frontend), the system supports multiple schools (multi-tenancy) from a single platform, with each school operating in complete data isolation.
 
@@ -117,8 +117,8 @@ Built on **Laravel 10+** (backend) and **React 17+** (frontend), the system supp
 
 ```bash
 # Clone the repository
-git clone git@github.com:Spraybery/skullu.2.o.git
-cd skullu.2.o
+git clone git@github.com:Spraybery/ikonex.2.o.git
+cd ikonex.2.o
 
 # Install PHP dependencies
 composer install
@@ -167,7 +167,7 @@ npm run production
 ## Project Structure
 
 ```
-skullu-2.0/
+ikonex-2.0/
 ├── app/
 │   ├── Http/Controllers/
 │   │   ├── Admin/          # Admin-level controllers
@@ -193,7 +193,7 @@ skullu-2.0/
 
 ## License
 
-This project is proprietary software developed for Skullu ERP. All rights reserved.
+This project is proprietary software developed for Ikonex ERP. All rights reserved.
 
 ---
 

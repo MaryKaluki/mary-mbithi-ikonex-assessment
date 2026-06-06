@@ -60,5 +60,5 @@
     <tr><td colspan="7">TOTAL</td><td class="num">{{ number_format(($s['amount'] ?? $rows->sum('amount')) / 100, 2) }}</td><td></td></tr>
   </tfoot>
 </table>
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }}</div>
 </body></html>

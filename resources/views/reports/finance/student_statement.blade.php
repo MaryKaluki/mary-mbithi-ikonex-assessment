@@ -74,5 +74,5 @@
 @endif
 @endforeach
 
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; Statement is accurate as of print date.</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; Statement is accurate as of print date.</div>
 </body></html>

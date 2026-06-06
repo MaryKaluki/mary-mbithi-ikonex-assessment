@@ -143,7 +143,7 @@ const Sidebar = ({ role = 'super_admin', darkMode, isOpen, closeSidebar, onLogou
                     </div>
                 )}
                 <div className="min-w-0">
-                    <h1 className="text-sm font-bold text-white truncate">{schoolName || 'Skullu 2.0'}</h1>
+                    <h1 className="text-sm font-bold text-white truncate">{schoolName || 'Ikonex 2.0'}</h1>
                     <p className="text-[10px] text-slate-500 uppercase tracking-widest">{role.replace('_', ' ')}</p>
                 </div>
             </div>

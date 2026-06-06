@@ -61,7 +61,7 @@ class AuthController extends Controller
         $user->tokens()->delete();
 
         // Issue new token
-        $token = $user->createToken('skullu-spa')->plainTextToken;
+        $token = $user->createToken('ikonex-spa')->plainTextToken;
 
         return response()->json([
             'token' => $token,

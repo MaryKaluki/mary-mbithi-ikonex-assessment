@@ -56,5 +56,5 @@
     <tr><td colspan="6">TOTAL OUTSTANDING</td><td class="num">{{ number_format(($summary['total_balance'] ?? $rows->sum('balance_due')) / 100, 2) }}</td></tr>
   </tfoot>
 </table>
-<div class="footer">Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
+<div class="footer">Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; CONFIDENTIAL</div>
 </body></html>

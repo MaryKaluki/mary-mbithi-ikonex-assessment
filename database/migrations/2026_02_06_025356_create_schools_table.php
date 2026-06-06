@@ -16,7 +16,7 @@ class CreateSchoolsTable extends Migration
         Schema::create('schools', function (Blueprint $table) {
             $table->string('id')->primary(); // Alphanumeric code e.g. MSI-48X2
             $table->string('name');
-            $table->string('domain')->unique(); // e.g., 'hilltop' for hilltop.skullu.com
+            $table->string('domain')->unique(); // e.g., 'hilltop' for hilltop.ikonex.com
             $table->string('admin_email');
             $table->string('logo_path')->nullable();
             $table->enum('school_type', ['Kindergarten', 'Primary (CBC)', 'Junior School', 'Senior School', 'Hybrid'])->default('Primary (CBC)');

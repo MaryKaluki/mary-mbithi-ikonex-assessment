@@ -13,7 +13,7 @@ if (!$school) {
 }
 
 $driver = App\Models\User::firstOrCreate(
-    ['email' => 'driver@skullu.com'],
+    ['email' => 'driver@ikonex.com'],
     [
         'name' => 'John The Driver',
         'password' => bcrypt('password'),

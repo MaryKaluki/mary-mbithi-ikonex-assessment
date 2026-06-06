@@ -94,7 +94,7 @@
 </table>
 
 <div class="footer">
-  Skullu Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; This is a computer-generated document.
+  Ikonex Finance — {{ $school->name ?? '' }} &nbsp;|&nbsp; Printed: {{ $date }} &nbsp;|&nbsp; This is a computer-generated document.
 </div>
 </body>
 </html>

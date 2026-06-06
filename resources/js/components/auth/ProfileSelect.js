@@ -21,7 +21,7 @@ const ProfileSelect = ({ onSelectProfile, schoolName, schoolLogo }) => {
                     {schoolLogo && (
                         <img src={schoolLogo} className="w-24 h-24 rounded-2xl mx-auto mb-6 object-cover shadow-xl" alt="Logo" />
                     )}
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-4 dark:text-white">Welcome to {schoolName || 'Skullu 2.0'}</h1>
+                    <h1 className="text-4xl font-extrabold text-gray-900 mb-4 dark:text-white">Welcome to {schoolName || 'Ikonex 2.0'}</h1>
                     <p className="text-xl text-gray-500 max-w-2xl mx-auto dark:text-gray-400">Select your profile to sign in to the dashboard.</p>
                 </div>
 
@@ -52,7 +52,7 @@ const ProfileSelect = ({ onSelectProfile, schoolName, schoolLogo }) => {
                 </div>
 
                 <div className="mt-12 text-center text-sm text-gray-400 dark:text-gray-600">
-                    <p>&copy; 2026 Skullu Education Systems. All rights reserved.</p>
+                    <p>&copy; 2026 Ikonex Education Systems. All rights reserved.</p>
                 </div>
             </div>
         </div>

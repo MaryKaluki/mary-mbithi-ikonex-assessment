@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * qbo_credentials  — Per-school OAuth2 tokens (encrypted at rest)
  * qbo_sync_logs    — Audit trail for every sync operation
- * qbo_entity_map   — Skullu ID → QBO entity ID cross-reference
+ * qbo_entity_map   — Ikonex ID → QBO entity ID cross-reference
  */
 class CreateQboIntegrationTables extends Migration
 {
@@ -43,7 +43,7 @@ class CreateQboIntegrationTables extends Migration
             ])->default('batch');
 
             $table->unsignedBigInteger('entity_id')->nullable()
-                  ->comment('FK to the local Skullu record that was synced');
+                  ->comment('FK to the local Ikonex record that was synced');
 
             $table->string('qbo_entity_id')->nullable()
                   ->comment('The QBO entity ID returned after successful creation');
@@ -70,7 +70,7 @@ class CreateQboIntegrationTables extends Migration
             $table->foreign('school_id')->references('id')->on('schools')->cascadeOnDelete();
 
             $table->string('entity_type');                    // 'fee_payment' | 'expense' | ...
-            $table->unsignedBigInteger('local_id');           // Skullu PK
+            $table->unsignedBigInteger('local_id');           // Ikonex PK
             $table->string('qbo_entity_id');                  // QBO DocNumber / TxnID
             $table->string('qbo_entity_type')->nullable();    // 'SalesReceipt' | 'Bill' | ...
             $table->timestamp('synced_at');
