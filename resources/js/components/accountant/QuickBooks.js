@@ -1,99 +1,197 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
 
 const QuickBooks = () => {
-    const [isConnected, setIsConnected] = useState(true);
+    const [status, setStatus]   = useState(null);
+    const [syncLog, setSyncLog] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [syncing, setSyncing] = useState(false);
+
+    const fetchStatus = async () => {
+        setLoading(true);
+        try {
+            const res = await window.axios.get('/api/finance/quickbooks/status').catch(() => ({ data: null }));
+            setStatus(res.data);
+            const logRes = await window.axios.get('/api/finance/quickbooks/sync-log').catch(() => ({ data: [] }));
+            setSyncLog(logRes.data.data || logRes.data || []);
+        } catch { /* silent */ }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { fetchStatus(); }, []);
+
+    const handleConnect = async () => {
+        try {
+            const res = await window.axios.get('/api/finance/quickbooks/auth-url');
+            if (res.data?.url) window.open(res.data.url, '_blank');
+        } catch { window.showToast?.('error', 'Could not initiate QuickBooks connection.'); }
+    };
+
+    const handleDisconnect = async () => {
+        if (!window.confirm('Disconnect QuickBooks integration?')) return;
+        try {
+            await window.axios.delete('/api/finance/quickbooks/disconnect');
+            fetchStatus();
+            window.showToast?.('success', 'QuickBooks disconnected.');
+        } catch { window.showToast?.('error', 'Could not disconnect.'); }
+    };
+
+    const handleSync = async () => {
+        setSyncing(true);
+        try {
+            await window.axios.post('/api/finance/quickbooks/sync');
+            window.showToast?.('success', 'Sync triggered.');
+            fetchStatus();
+        } catch (err) {
+            window.showToast?.('error', err.response?.data?.message || 'Sync failed.');
+        } finally { setSyncing(false); }
+    };
+
+    const connected = status?.connected === true;
+    const errors    = syncLog.filter(l => l.status === 'error').length;
 
     return (
-        <div className="space-y-6 pb-20">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">QuickBooks Online Integration</h2>
+        <div className="flex flex-col space-y-3 h-full pb-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Connection Status */}
-                <div className="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <div className="flex flex-col items-center text-center">
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${isConnected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                            <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
-                        </div>
-                        <h3 className="font-bold text-xl mb-1">{isConnected ? 'Connected' : 'Disconnected'}</h3>
-                        <p className="text-sm text-gray-500 mb-6">{isConnected ? 'Last synced: Just now' : 'Connect to sync data'}</p>
-
-                        <button
-                            onClick={() => setIsConnected(!isConnected)}
-                            className={`w-full py-2 rounded-lg font-bold transition-all ${isConnected ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-600 text-white hover:bg-green-700'}`}
-                        >
-                            {isConnected ? 'Disconnect' : 'Connect QuickBooks'}
-                        </button>
-                    </div>
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Finance <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">QuickBooks</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">QuickBooks Online Integration</h1>
                 </div>
-
-                {/* Sync Activity */}
-                <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-gray-100">Sync Activity Log</h3>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div className="flex items-center space-x-3">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                <div>
-                                    <div className="font-bold text-sm">Synced 45 Fee Invoices</div>
-                                    <div className="text-xs text-gray-500">Sales Record Update</div>
-                                </div>
-                            </div>
-                            <div className="text-xs font-mono text-gray-400">10:45 AM</div>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div className="flex items-center space-x-3">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                <div>
-                                    <div className="font-bold text-sm">Update Student Customer Profiles</div>
-                                    <div className="text-xs text-gray-500">Customer Data Sync</div>
-                                </div>
-                            </div>
-                            <div className="text-xs font-mono text-gray-400">09:30 AM</div>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
-                            <div className="flex items-center space-x-3">
-                                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                                <div>
-                                    <div className="font-bold text-sm text-red-700 dark:text-red-400">Failed: Expense Record #998</div>
-                                    <div className="text-xs text-red-500">Account mapping error</div>
-                                </div>
-                            </div>
-                            <div className="text-xs font-mono text-red-400">Yesterday</div>
-                        </div>
-                    </div>
-                </div>
+                {connected && (
+                    <button onClick={handleSync} disabled={syncing}
+                        className="px-4 py-1.5 bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-emerald-700 disabled:opacity-60 transition-colors">
+                        {syncing ? 'Syncing…' : 'Sync Now'}
+                    </button>
+                )}
             </div>
 
-            {/* Account Mapping */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">Chart of Accounts Mapping</h3>
-                    <button className="text-purple-600 font-bold text-sm hover:underline">Edit Mappings</button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">Revenue Accounts</h4>
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center p-2 border-b">
-                                <span className="text-sm">Tuition Fees</span>
-                                <span className="text-sm font-mono text-blue-600">4000 - Sales Income</span>
-                            </div>
-                            <div className="flex justify-between items-center p-2 border-b">
-                                <span className="text-sm">Transport Charges</span>
-                                <span className="text-sm font-mono text-blue-600">4100 - Service Income</span>
-                            </div>
-                        </div>
+            {/* Stats strip */}
+            {!loading && (
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${
+                        connected ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' : 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800'
+                    }`}>
+                        <span className={`text-base font-extrabold ${connected ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-400'}`}>
+                            {connected ? 'Connected' : 'Disconnected'}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">QuickBooks</span>
                     </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">Asset Accounts</h4>
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center p-2 border-b">
-                                <span className="text-sm">Bank (KCB)</span>
-                                <span className="text-sm font-mono text-blue-600">1010 - Checking</span>
+                    {errors > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                            <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{errors}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sync Errors</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <div className="flex gap-3 flex-1 min-h-0">
+
+                {/* Connection panel */}
+                <div className="w-56 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm flex flex-col">
+                    <div className="flex-shrink-0 px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700 rounded-t-lg">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Connection</span>
+                    </div>
+                    <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3 text-center">
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-extrabold ${
+                            connected ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
+                        }`}>
+                            QB
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{connected ? 'Connected' : 'Not Connected'}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">
+                                {connected
+                                    ? `Last sync: ${status.last_sync_at || 'Never'}`
+                                    : 'Connect to sync financial data'
+                                }
+                            </p>
+                        </div>
+                        {connected ? (
+                            <button onClick={handleDisconnect}
+                                className="w-full py-1.5 text-xs font-bold uppercase tracking-wider rounded-md border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                Disconnect
+                            </button>
+                        ) : (
+                            <button onClick={handleConnect}
+                                className="w-full py-1.5 text-xs font-bold uppercase tracking-wider rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                                Connect QB
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right stack */}
+                <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0">
+
+                    {/* Sync log */}
+                    <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                        <div className="flex-shrink-0 px-4 py-2.5 bg-slate-800 dark:bg-slate-900 rounded-t-lg">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Sync Activity Log</span>
+                        </div>
+                        {loading ? (
+                            <div className="p-6"><SkeletonLoader type="table"/></div>
+                        ) : syncLog.length === 0 ? (
+                            <div className="flex-1 flex items-center justify-center py-10">
+                                <p className="text-xs text-slate-400 italic">
+                                    {connected ? 'No sync activity yet.' : 'Connect QuickBooks to view sync logs.'}
+                                </p>
                             </div>
-                            <div className="flex justify-between items-center p-2 border-b">
-                                <span className="text-sm">Petty Cash</span>
-                                <span className="text-sm font-mono text-blue-600">1020 - Cash on Hand</span>
+                        ) : (
+                            <div className="flex-1 overflow-auto">
+                                <table className="w-full text-left" style={{ minWidth: 420 }}>
+                                    <thead className="sticky top-0 z-10">
+                                        <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                            <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                            <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Description</th>
+                                            <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Time</th>
+                                            <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-16 text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {syncLog.map((l, i) => (
+                                            <tr key={l.id} className={`border-b border-slate-100 dark:border-gray-700/60 ${
+                                                l.status === 'error' ? 'bg-red-50/60 dark:bg-red-900/10' : i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                                <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                                <td className="px-3 py-2">
+                                                    <p className={`text-xs font-semibold ${l.status === 'error' ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'}`}>{l.description}</p>
+                                                    {l.details && <p className="text-[10px] text-slate-400">{l.details}</p>}
+                                                </td>
+                                                <td className="px-3 py-2 text-[10px] font-mono text-slate-400">{l.created_at?.split('T')[0]}</td>
+                                                <td className="px-3 py-2 text-center">
+                                                    <span className={`inline-block w-2 h-2 rounded-full ${l.status === 'success' || l.status === 'ok' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Account mapping info */}
+                    <div className="flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
+                        <div className="px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700 rounded-t-lg">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Integration Notes</span>
+                        </div>
+                        <div className="p-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">What syncs</p>
+                                {['Fee invoices → QB Sales Receipts', 'Payments → QB Payments', 'Expenses → QB Bills'].map((item, i) => (
+                                    <p key={i} className="text-[10px] text-slate-500 dark:text-slate-400 py-1 border-b border-slate-50 dark:border-gray-700 last:border-0">{item}</p>
+                                ))}
+                            </div>
+                            <div>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">Sync frequency</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 py-1">Auto-sync: On payment recorded</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 py-1">Manual: Use "Sync Now" button</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 py-1">Nightly: 2:00 AM scheduled sync</p>
                             </div>
                         </div>
                     </div>

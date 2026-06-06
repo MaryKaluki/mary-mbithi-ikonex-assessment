@@ -1,79 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
+
+const inputCls = "px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+const statusBadge = (s) =>
+    s === 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' :
+    s === 'active'    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+    s === 'overdue'   ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
+                        'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400';
 
 const FeeInstallments = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    const [plans, setPlans]     = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch]   = useState('');
 
-    const installments = [
-        { id: 'PLAN-001', student: 'John Doe', plan: '3-Month Plan', total: 'KSh 45,000', paid: 'KSh 15,000', nextDue: '2024-02-05', amountDue: 'KSh 15,000', status: 'Active' },
-        { id: 'PLAN-002', student: 'Jane Smith', plan: '2-Month Plan', total: 'KSh 30,000', paid: 'KSh 30,000', nextDue: '-', amountDue: 'KSh 0', status: 'Completed' },
-        { id: 'PLAN-003', student: 'Mike Ross', plan: 'Special Arrangement', total: 'KSh 50,000', paid: 'KSh 10,000', nextDue: '2024-02-01', amountDue: 'KSh 10,000', status: 'Overdue' },
-    ];
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Completed': return 'bg-green-100 text-green-600';
-            case 'Active': return 'bg-blue-100 text-blue-600';
-            case 'Overdue': return 'bg-red-100 text-red-600';
-            default: return 'bg-gray-100 text-gray-600';
-        }
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const params = {};
+            if (search) params.search = search;
+            const res = await window.axios.get('/api/finance/installment-plans', { params });
+            setPlans(res.data.data || res.data || []);
+        } catch { setPlans([]); }
+        finally { setLoading(false); }
     };
 
+    useEffect(() => { fetchData(); }, []);
+
+    const active    = plans.filter(p => p.status === 'active').length;
+    const overdue   = plans.filter(p => p.status === 'overdue').length;
+    const completed = plans.filter(p => p.status === 'completed').length;
+
     return (
-        <div className="space-y-6 pb-20">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Fee Installment Plans</h2>
-                    <p className="text-sm text-gray-500">Manage custom payment schedules for students.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Finance <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Fee Installments</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Fee Installment Plans</h1>
                 </div>
-                <button className="px-4 py-2 bg-purple-600 text-white font-bold rounded-lg shadow hover:bg-purple-700 hover:-translate-y-0.5 transform transition-all">
-                    + Create New Plan
-                </button>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                <input
-                    type="text"
-                    placeholder="Search by Student or Plan ID..."
-                    className="w-full pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
+            {/* Stats strip */}
+            {!loading && plans.length > 0 && (
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    {[
+                        { label: 'Total Plans', value: plans.length,  cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                        { label: 'Active',      value: active,         cls: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20' },
+                        { label: 'Overdue',     value: overdue,        cls: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' },
+                        { label: 'Completed',   value: completed,      cls: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' },
+                    ].map(c => (
+                        <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                            <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{c.value}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100 dark:bg-gray-700 dark:border-gray-600">
-                        <tr>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Plan ID</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Student</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Plan Type</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Total</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Next Due</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {installments.map((plan) => (
-                            <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                <td className="px-6 py-4 font-mono text-xs text-gray-500">{plan.id}</td>
-                                <td className="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">{plan.student}</td>
-                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{plan.plan}</td>
-                                <td className="px-6 py-4 font-medium">{plan.total}</td>
-                                <td className="px-6 py-4">
-                                    <div className="text-sm font-medium">{plan.nextDue}</div>
-                                    <div className="text-xs text-gray-500">{plan.amountDue}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${getStatusColor(plan.status)}`}>{plan.status}</span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="text-purple-600 hover:underline text-sm font-medium">View Schedule</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {/* Search */}
+            {plans.length > 0 && (
+                <div className="flex gap-2 items-end flex-shrink-0">
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Search</label>
+                        <input value={search} onChange={e => setSearch(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && fetchData()}
+                            placeholder="Student or plan ID…" className={inputCls} style={{ width: 240 }}/>
+                    </div>
+                    <button onClick={fetchData}
+                        className="px-4 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                        Search
+                    </button>
+                </div>
+            )}
+
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : plans.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-16">
+                        <p className="text-slate-400 text-sm">No installment plans on record.</p>
+                        <p className="text-[10px] text-slate-300 mt-1">Installment plans will appear here once the feature is configured.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 780 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Plan ID</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Student</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Plan Type</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Total</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Paid</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Next Due</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {plans.map((p, i) => (
+                                        <tr key={p.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                            i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                        }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                            <td className="px-3 py-2 text-[10px] font-mono text-slate-400">{p.plan_number || p.id}</td>
+                                            <td className="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100">{p.first_name} {p.last_name}</td>
+                                            <td className="px-3 py-2 text-xs text-slate-500">{p.plan_type}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-300">KSh {Number(p.total_amount).toLocaleString()}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold font-mono text-emerald-600">KSh {Number(p.amount_paid).toLocaleString()}</td>
+                                            <td className="px-3 py-2">
+                                                {p.next_due_date ? (
+                                                    <>
+                                                        <p className="text-[10px] font-mono text-slate-400">{p.next_due_date}</p>
+                                                        {p.next_installment_amount > 0 && (
+                                                            <p className="text-[9px] text-red-400 font-bold">KSh {Number(p.next_installment_amount).toLocaleString()}</p>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <span className="text-[10px] text-slate-300">—</span>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${statusBadge(p.status)}`}>
+                                                    {p.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{plans.length} plan{plans.length !== 1 ? 's' : ''}</p>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

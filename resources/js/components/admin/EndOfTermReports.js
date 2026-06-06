@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
 
-const STATUS_COLOR = {
-    'Pass':          'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    'Needs Support': 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300',
-    'No Marks':      'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
+const STATUS_BADGE = {
+    'Pass':          'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    'Needs Support': 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+    'No Marks':      'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-gray-400',
 };
 
-const GRADE_COLOR = {
-    'A': 'text-green-600 dark:text-green-400', 'A-': 'text-green-500',
-    'B+': 'text-blue-600 dark:text-blue-400',  'B': 'text-blue-500', 'B-': 'text-blue-400',
+const GRADE_CLS = {
+    'A': 'text-emerald-600 dark:text-emerald-400', 'A-': 'text-emerald-500',
+    'B+': 'text-blue-600 dark:text-blue-400',       'B': 'text-blue-500',   'B-': 'text-blue-400',
     'C+': 'text-yellow-600',  'C': 'text-yellow-500', 'C-': 'text-orange-500',
-    'D+': 'text-red-500', 'D': 'text-red-600', 'D-': 'text-red-700', 'E': 'text-gray-500',
+    'D+': 'text-red-500',     'D': 'text-red-600',    'D-': 'text-red-700',  'E': 'text-slate-400',
 };
 
 const EndOfTermReports = () => {
-    const [data, setData]             = useState({ students: [], exams: [], grade_levels: [], active_exam: null });
-    const [loading, setLoading]       = useState(true);
-    const [activeExam, setActiveExam] = useState('');
+    const [data, setData]               = useState({ students: [], exams: [], grade_levels: [], active_exam: null });
+    const [loading, setLoading]         = useState(true);
+    const [activeExam, setActiveExam]   = useState('');
     const [gradeFilter, setGradeFilter] = useState('');
+    const [search, setSearch]           = useState('');
 
     const load = async (examId = '', grade = '') => {
         setLoading(true);
@@ -34,128 +36,136 @@ const EndOfTermReports = () => {
 
     useEffect(() => { load(); }, []);
 
-    const handleExamChange = (id) => {
-        setActiveExam(id);
-        load(id, gradeFilter);
-    };
+    const handleExamChange = (id) => { setActiveExam(id); load(id, gradeFilter); };
+    const handleGradeChange = (g) => { setGradeFilter(g); load(activeExam, g); };
 
-    const handleGradeChange = (grade) => {
-        setGradeFilter(grade);
-        load(activeExam, grade);
-    };
-
-    const passCount   = data.students.filter(s => s.status === 'Pass').length;
+    const passCount    = data.students.filter(s => s.status === 'Pass').length;
     const supportCount = data.students.filter(s => s.status === 'Needs Support').length;
     const noMarksCount = data.students.filter(s => s.status === 'No Marks').length;
 
+    const filtered = data.students.filter(s =>
+        !search ||
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        (s.admission_number || '').toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">End of Term Reports</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Consolidated student performance by examination</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Admin <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Term Reports</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">End of Term Reports</h1>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <select value={activeExam} onChange={e => handleExamChange(e.target.value)}
-                        className="border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
-                        <option value="">Select Exam</option>
-                        {data.exams.map(e => (
-                            <option key={e.id} value={e.id}>{e.name}</option>
-                        ))}
-                    </select>
-                </div>
+                <select value={activeExam} onChange={e => handleExamChange(e.target.value)}
+                    className="px-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select Exam…</option>
+                    {data.exams.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
             </div>
 
-            {/* Summary */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 text-center">
-                    <p className="text-3xl font-extrabold text-green-600">{passCount}</p>
-                    <p className="text-xs font-black uppercase text-gray-400 tracking-wider mt-1">Passed</p>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 text-center">
-                    <p className="text-3xl font-extrabold text-red-500">{supportCount}</p>
-                    <p className="text-xs font-black uppercase text-gray-400 tracking-wider mt-1">Needs Support</p>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 text-center">
-                    <p className="text-3xl font-extrabold text-gray-400">{noMarksCount}</p>
-                    <p className="text-xs font-black uppercase text-gray-400 tracking-wider mt-1">No Marks</p>
-                </div>
-            </div>
-
-            {/* Grade filter */}
-            <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-black uppercase text-gray-400 tracking-wider mr-1">Filter:</span>
-                <button onClick={() => handleGradeChange('')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${!gradeFilter ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400'}`}>
-                    All
-                </button>
-                {data.grade_levels.map(g => (
-                    <button key={g} onClick={() => handleGradeChange(g)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${gradeFilter === g ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400'}`}>
-                        {g}
-                    </button>
+            {/* Stats strip */}
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                {[
+                    { label: 'Passed',        value: passCount,    cls: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' },
+                    { label: 'Needs Support', value: supportCount, cls: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' },
+                    { label: 'No Marks',      value: noMarksCount, cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                ].map(c => (
+                    <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{c.value}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                    </div>
                 ))}
             </div>
 
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2 items-center flex-shrink-0">
+                {/* Grade filter pills */}
+                <div className="flex flex-wrap gap-1">
+                    <button onClick={() => handleGradeChange('')}
+                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
+                            !gradeFilter ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 text-slate-500 hover:border-slate-400'
+                        }`}>All Grades</button>
+                    {data.grade_levels.map(g => (
+                        <button key={g} onClick={() => handleGradeChange(g)}
+                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
+                                gradeFilter === g ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 text-slate-500 hover:border-slate-400'
+                            }`}>{g}</button>
+                    ))}
+                </div>
+                <div className="flex-1 relative min-w-48">
+                    <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Search name or adm no…"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                        value={search} onChange={e => setSearch(e.target.value)}/>
+                </div>
+                <div className="flex items-center px-3 py-1.5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md text-xs text-slate-500 whitespace-nowrap select-none">
+                    <span className="font-bold text-slate-700 dark:text-slate-200 mr-1">{filtered.length}</span> students
+                </div>
+            </div>
+
             {/* Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {loading ? (
-                    <div className="p-12 flex justify-center">
-                        <svg className="animate-spin w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                        </svg>
-                    </div>
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[640px]">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">#</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Student</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Adm No</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Grade</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Avg Score</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Letter</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                                {data.students.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-sm text-gray-400">
-                                            {activeExam ? 'No students found for this selection.' : 'Select an exam to view results.'}
-                                        </td>
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 640 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Student</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Adm No</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Grade</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-center">Avg Score</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Letter</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Status</th>
                                     </tr>
-                                ) : data.students.map((s, i) => (
-                                    <tr key={s.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                                        <td className="px-6 py-4 text-xs font-bold text-gray-400">{i + 1}</td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{s.name}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-mono text-gray-400">{s.admission_number}</td>
-                                        <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400">{s.grade_level}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            {s.average !== null ? (
-                                                <span className="text-sm font-extrabold text-gray-800 dark:text-gray-100">{s.average}%</span>
-                                            ) : (
-                                                <span className="text-xs text-gray-400">—</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`text-sm font-extrabold ${GRADE_COLOR[s.grade] || 'text-gray-400'}`}>{s.grade}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${STATUS_COLOR[s.status] || ''}`}>
-                                                {s.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="px-3 py-12 text-center text-sm text-slate-400">
+                                                {activeExam ? 'No students found for this selection.' : 'Select an exam to view results.'}
+                                            </td>
+                                        </tr>
+                                    ) : filtered.map((s, i) => (
+                                        <tr key={s.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                            i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                        }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                            <td className="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100">{s.name}</td>
+                                            <td className="px-3 py-2 text-xs font-mono text-slate-400">{s.admission_number}</td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{s.grade_level}</td>
+                                            <td className="px-3 py-2 text-center">
+                                                {s.average !== null
+                                                    ? <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{s.average}%</span>
+                                                    : <span className="text-xs text-slate-300">—</span>}
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className={`text-sm font-bold ${GRADE_CLS[s.grade] || 'text-slate-400'}`}>{s.grade || '—'}</span>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${STATUS_BADGE[s.status] || ''}`}>
+                                                    {s.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{filtered.length} students</p>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

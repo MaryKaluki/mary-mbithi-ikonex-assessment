@@ -1,29 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SkeletonLoader } from '../common/Loader';
 
 const CATEGORIES = ['All Files', 'Policies', 'Exams', 'Finance', 'HR', 'General'];
 
-const fileIcon = (type) => {
-    const icons = {
-        pdf: 'text-red-500', xls: 'text-green-600', doc: 'text-blue-600', file: 'text-gray-500',
-    };
-    return icons[type] || icons.file;
-};
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 const TeacherDocuments = () => {
-    const [activeCategory, setActiveCategory] = useState('All Files');
-    const [files, setFiles] = useState([]);
-    const [quota, setQuota] = useState({ used_mb: 0, limit_mb: 0, percent: 0 });
-    const [isLoading, setIsLoading] = useState(true);
-    
+    const [activeCategory,    setActiveCategory]    = useState('All Files');
+    const [files,             setFiles]             = useState([]);
+    const [isLoading,         setIsLoading]         = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadCategory, setUploadCategory] = useState('General');
-    const [uploadVisibility, setUploadVisibility] = useState('all_teachers');
-    const [visibleToUserId, setVisibleToUserId] = useState('');
-    const [teachers, setTeachers] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [authUserId, setAuthUserId] = useState(null);
+    const [isUploading,       setIsUploading]       = useState(false);
+    const [uploadCategory,    setUploadCategory]    = useState('General');
+    const [uploadVisibility,  setUploadVisibility]  = useState('all_teachers');
+    const [visibleToUserId,   setVisibleToUserId]   = useState('');
+    const [teachers,          setTeachers]          = useState([]);
+    const [selectedFile,      setSelectedFile]      = useState(null);
+    const [authUserId,        setAuthUserId]        = useState(null);
 
     const fileInputRef = useRef(null);
 
@@ -32,29 +24,15 @@ const TeacherDocuments = () => {
         if (userStr) setAuthUserId(JSON.parse(userStr).id);
     }, []);
 
-    useEffect(() => {
-        fetchFiles();
-        fetchTeachers();
-    }, [activeCategory]);
+    useEffect(() => { fetchFiles(); fetchTeachers(); }, [activeCategory]);
 
     const fetchFiles = async () => {
         setIsLoading(true);
         try {
             const res = await window.axios.get(`/api/teacher/documents?category=${activeCategory}`);
             setFiles(res.data.documents || []);
-            if (res.data.quota) setQuota(res.data.quota);
-        } catch {
-            // silent fail or fallback. Wait, api is inside teacher group. Let me check api.php
-            try {
-               const adminRes = await window.axios.get(`/api/teacher/documents?category=${activeCategory}`);
-               setFiles(adminRes.data.documents || []);
-               if (adminRes.data.quota) setQuota(adminRes.data.quota);
-            } catch (err) {
-               window.showToast('error', 'Failed to load documents.');
-            }
-        } finally {
-            setIsLoading(false);
-        }
+        } catch { window.showToast?.('error', 'Failed to load documents.'); }
+        finally { setIsLoading(false); }
     };
 
     const fetchTeachers = async () => {
@@ -65,41 +43,28 @@ const TeacherDocuments = () => {
     };
 
     const handleFileSelect = (e) => {
-        if (e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
-            setIsUploadModalOpen(true);
-        }
+        if (e.target.files[0]) { setSelectedFile(e.target.files[0]); setIsUploadModalOpen(true); }
     };
 
     const handleUploadSubmit = async (e) => {
         e.preventDefault();
         if (!selectedFile) return;
-
         if (uploadVisibility === 'specific_teacher' && !visibleToUserId) {
-            window.showToast('error', 'Please select a specific teacher.');
+            window.showToast?.('error', 'Please select a specific teacher.');
             return;
         }
-
         setIsUploading(true);
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('category', uploadCategory);
         formData.append('visibility_type', uploadVisibility);
-        if (uploadVisibility === 'specific_teacher') {
-            formData.append('visible_to_user_id', visibleToUserId);
-        }
-
+        if (uploadVisibility === 'specific_teacher') formData.append('visible_to_user_id', visibleToUserId);
         try {
-            await window.axios.post('/api/teacher/documents', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            window.showToast('success', 'Document uploaded successfully.');
-            setIsUploadModalOpen(false);
-            setSelectedFile(null);
-            fetchFiles();
+            await window.axios.post('/api/teacher/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            window.showToast?.('success', 'Document uploaded successfully.');
+            setIsUploadModalOpen(false); setSelectedFile(null); fetchFiles();
         } catch (err) {
-            const msg = err.response?.data?.message || 'Failed to upload document. Maximum 20MB allowed.';
-            window.showToast('error', msg);
+            window.showToast?.('error', err.response?.data?.message || 'Failed to upload document. Maximum 20MB allowed.');
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -111,182 +76,167 @@ const TeacherDocuments = () => {
         try {
             await window.axios.delete(`/api/teacher/documents/${id}`);
             setFiles(prev => prev.filter(f => f.id !== id));
-            window.showToast('success', 'Document deleted.');
-            fetchFiles();
-        } catch {
-            window.showToast('error', 'Failed to delete document. You can only delete your own uploads.');
-        }
+            window.showToast?.('success', 'Document deleted.');
+        } catch { window.showToast?.('error', 'Failed to delete document. You can only delete your own uploads.'); }
     };
 
     return (
-        <div className="space-y-6 pb-20">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Documents Hub</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Access shared files and upload your own.</p>
-                </div>
+        <div className="flex flex-col space-y-3 h-full pb-6">
 
-                <div className="flex flex-col sm:flex-row gap-6 items-center">
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg" />
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30 whitespace-nowrap w-full sm:w-auto flex items-center justify-center gap-2"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            Upload File
-                        </button>
-                    </div>
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Teacher <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Documents Hub</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Documents Hub</h1>
+                </div>
+                <div>
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg"/>
+                    <button onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                        + Upload File
+                    </button>
                 </div>
             </div>
 
             {/* Category tabs */}
-            <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 flex overflow-x-auto border-b border-slate-200 dark:border-gray-700">
                 {CATEGORIES.map(cat => (
-                    <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`px-6 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-colors ${
+                    <button key={cat} onClick={() => setActiveCategory(cat)}
+                        className={`px-4 py-2 text-xs font-bold border-b-2 whitespace-nowrap transition-colors ${
                             activeCategory === cat
-                                ? 'border-primary text-primary dark:text-primary-light border-b-2'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
-                    >
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}>
                         {cat}
                     </button>
                 ))}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            {/* Files table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {isLoading ? (
-                    <div className="p-6"><SkeletonLoader type="table" /></div>
+                    <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
                 ) : files.length === 0 ? (
-                    <div className="p-12 text-center">
-                        <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <p className="text-gray-500 font-bold dark:text-gray-400">No documents available here.</p>
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">No documents in this category.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[700px]">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-gray-400">File Name</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-gray-400">Category</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-gray-400">Uploaded By</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-gray-400">Date</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-gray-400 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                                {files.map((file) => (
-                                    <tr key={file.id} className="hover:bg-primary/5 dark:hover:bg-gray-700/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 tracking-wider w-10 text-center ${fileIcon(file.type)}`}>{file.type}</span>
-                                                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate max-w-xs">{file.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{file.category}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-gray-800 dark:text-gray-300">
-                                            {file.owner} <span className="text-xs font-normal text-gray-400 block">{file.size}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-mono text-gray-500 dark:text-gray-400">{file.date}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <a href={file.url} target="_blank" rel="noreferrer" className="text-[11px] font-black uppercase text-primary hover:text-primary-dark transition-colors">
-                                                    Download
-                                                </a>
-                                                {file.owner_id === authUserId && (
-                                                    <button onClick={() => handleDelete(file.id)} className="text-[11px] font-black uppercase text-red-500 hover:text-red-700 transition-colors">
-                                                        Delete
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 640 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">File Name</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Category</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Uploaded By</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Date</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {files.map((file, i) => (
+                                        <tr key={file.id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 tracking-wider">
+                                                        {file.type}
+                                                    </span>
+                                                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate max-w-xs">{file.name}</span>
+                                                    <span className="text-[10px] text-slate-400">{file.size}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300">
+                                                    {file.category}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{file.owner}</td>
+                                            <td className="px-3 py-2 text-[10px] font-mono text-slate-400 dark:text-slate-500">{file.date}</td>
+                                            <td className="px-3 py-2 text-right">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <a href={file.url} target="_blank" rel="noreferrer"
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                        Download
+                                                    </a>
+                                                    {file.owner_id === authUserId && (
+                                                        <button onClick={() => handleDelete(file.id)}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition-colors">
+                                                            Del
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{files.length} file{files.length !== 1 ? 's' : ''}</p>
+                        </div>
+                    </>
                 )}
             </div>
 
-            {/* Upload Settings Modal */}
+            {/* Upload modal */}
             {isUploadModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="font-bold text-lg text-gray-800 dark:text-white">Upload Settings</h3>
-                            <button onClick={() => setIsUploadModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-xl w-full max-w-sm">
+                        <div className="px-5 py-3.5 bg-slate-50 dark:bg-gray-900/50 border-b border-slate-200 dark:border-gray-700 rounded-t-lg flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-slate-800 dark:text-gray-100">Upload Settings</h3>
+                            <button onClick={() => setIsUploadModalOpen(false)}
+                                className="text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none">✕</button>
                         </div>
-                        
-                        <form onSubmit={handleUploadSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleUploadSubmit} className="p-5 space-y-4">
                             {selectedFile && (
-                                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{selectedFile.name}</p>
-                                        <p className="text-xs text-gray-500 font-mono">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                                    </div>
+                                <div className="bg-slate-50 dark:bg-gray-700/50 px-3 py-2 rounded-md">
+                                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{selectedFile.name}</p>
+                                    <p className="text-[10px] text-slate-400 font-mono">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
                             )}
-
                             <div>
-                                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Category</label>
-                                <select 
-                                    value={uploadCategory} 
-                                    onChange={e => setUploadCategory(e.target.value)}
-                                    className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                >
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Category</label>
+                                <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className={inputCls}>
                                     {CATEGORIES.filter(c => c !== 'All Files').map(c => <option key={c}>{c}</option>)}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Share With</label>
-                                <select 
-                                    value={uploadVisibility} 
-                                    onChange={e => setUploadVisibility(e.target.value)}
-                                    className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                >
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Share With</label>
+                                <select value={uploadVisibility} onChange={e => setUploadVisibility(e.target.value)} className={inputCls}>
                                     <option value="all_teachers">All Staff (Everyone)</option>
                                     <option value="specific_teacher">Specific Staff Member</option>
                                 </select>
                             </div>
-
                             {uploadVisibility === 'specific_teacher' && (
-                                <div className="animate-fade-in-up">
-                                    <label className="block text-xs font-black uppercase text-gray-400 mb-2">Select Staff</label>
-                                    <select 
-                                        value={visibleToUserId} 
-                                        onChange={e => setVisibleToUserId(e.target.value)}
-                                        className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                        required
-                                    >
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Select Staff</label>
+                                    <select value={visibleToUserId} onChange={e => setVisibleToUserId(e.target.value)} className={inputCls} required>
                                         <option value="" disabled>-- Select Staff --</option>
-                                        {teachers.map(t => (
-                                            <option key={t.id} value={t.id}>{t.name}</option>
-                                        ))}
+                                        {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                     </select>
                                 </div>
                             )}
-
-                            <button 
-                                type="submit" 
-                                disabled={isUploading}
-                                className="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/30 disabled:opacity-50"
-                            >
-                                {isUploading ? 'Uploading...' : 'Confirm Upload'}
-                            </button>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button type="button" onClick={() => setIsUploadModalOpen(false)}
+                                    className="px-4 py-1.5 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={isUploading}
+                                    className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                                    {isUploading ? 'Uploading…' : 'Upload'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

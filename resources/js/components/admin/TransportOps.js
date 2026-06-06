@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
+
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 const TransportOps = () => {
     const [activeTab, setActiveTab] = useState('vehicles');
-    
-    // Data states
-    const [vehicles, setVehicles] = useState([]);
-    const [routes, setRoutes] = useState([]);
-    const [drivers, setDrivers] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    const [allStudents, setAllStudents] = useState([]); // for manifesting
+    const [vehicles, setVehicles]     = useState([]);
+    const [routes, setRoutes]         = useState([]);
+    const [drivers, setDrivers]       = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [allStudents, setAllStudents] = useState([]);
 
     const fetchData = () => {
         setLoading(true);
@@ -17,255 +18,344 @@ const TransportOps = () => {
             window.axios.get('/api/admin/transport/vehicles'),
             window.axios.get('/api/admin/transport/routes'),
             window.axios.get('/api/admin/transport/drivers'),
-            window.axios.get('/api/admin/students') // get all students for manifest matching
+            window.axios.get('/api/admin/students'),
         ]).then(([vRes, rRes, dRes, sRes]) => {
             setVehicles(vRes.data);
             setRoutes(rRes.data);
             setDrivers(dRes.data);
-            // student payload could be paginated or array. Safely handle:
             setAllStudents(Array.isArray(sRes.data) ? sRes.data : (sRes.data?.data || []));
-            setLoading(false);
         }).catch(() => {
-            window.showToast?.('error', 'Failed to load transport data');
-            setLoading(false);
-        });
+            window.showToast?.('error', 'Failed to load transport data.');
+        }).finally(() => setLoading(false));
     };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
-    // ── Forms ──
+    // Vehicle modal
     const [showVehicleModal, setShowVehicleModal] = useState(false);
     const [vForm, setVForm] = useState({ plate_number: '', make: '', model: '', capacity: 30, status: 'Active' });
 
     const saveVehicle = async () => {
         try {
             await window.axios.post('/api/admin/transport/vehicles', vForm);
-            window.showToast?.('success', 'Vehicle saved');
+            window.showToast?.('success', 'Vehicle saved.');
             setShowVehicleModal(false);
             fetchData();
-        } catch (e) {
-            window.showToast?.('error', 'Failed to save vehicle');
-        }
+        } catch { window.showToast?.('error', 'Failed to save vehicle.'); }
     };
 
     const deleteVehicle = async (id) => {
-        if(!window.confirm("Delete this vehicle?")) return;
+        if (!window.confirm('Delete this vehicle?')) return;
         try {
             await window.axios.delete(`/api/admin/transport/vehicles/${id}`);
-            window.showToast?.('success', 'Vehicle deleted');
+            window.showToast?.('success', 'Vehicle deleted.');
             fetchData();
-        } catch(e) { window.showToast?.('error', 'Delete failed'); }
-    }
+        } catch { window.showToast?.('error', 'Delete failed.'); }
+    };
 
+    // Route modal
     const [showRouteModal, setShowRouteModal] = useState(false);
     const [rForm, setRForm] = useState({ name: '', vehicle_id: '', driver_id: '', status: 'Active' });
 
     const saveRoute = async () => {
         try {
             await window.axios.post('/api/admin/transport/routes', rForm);
-            window.showToast?.('success', 'Route created');
+            window.showToast?.('success', 'Route created.');
             setShowRouteModal(false);
             fetchData();
-        } catch (e) {
-            window.showToast?.('error', 'Failed to save route');
-        }
+        } catch { window.showToast?.('error', 'Failed to save route.'); }
     };
 
     const deleteRoute = async (id) => {
-        if(!window.confirm("Delete this route?")) return;
+        if (!window.confirm('Delete this route?')) return;
         try {
             await window.axios.delete(`/api/admin/transport/routes/${id}`);
-            window.showToast?.('success', 'Route deleted');
+            window.showToast?.('success', 'Route deleted.');
             fetchData();
-        } catch(e) { window.showToast?.('error', 'Delete failed'); }
-    }
+        } catch { window.showToast?.('error', 'Delete failed.'); }
+    };
 
-    const [manifestModal, setManifestModal] = useState({ show: false, route: null, students: [] });
+    // Manifest modal
+    const [manifest, setManifest] = useState({ show: false, route: null, students: [] });
+
     const openManifest = async (route) => {
         try {
             const res = await window.axios.get(`/api/admin/transport/routes/${route.id}/students`);
-            const assignedIds = res.data.map(s => s.id);
-            setManifestModal({ show: true, route, students: assignedIds });
-        } catch(e) {
-            window.showToast?.('error', 'Failed to load manifest');
-        }
+            setManifest({ show: true, route, students: res.data.map(s => s.id) });
+        } catch { window.showToast?.('error', 'Failed to load manifest.'); }
     };
 
-    const toggleManifestStudent = (studentId) => {
-        setManifestModal(prev => {
-            const has = prev.students.includes(studentId);
-            return {
-                ...prev,
-                students: has ? prev.students.filter(id => id !== studentId) : [...prev.students, studentId]
-            };
-        });
-    };
+    const toggleStudent = (id) => setManifest(prev => ({
+        ...prev,
+        students: prev.students.includes(id)
+            ? prev.students.filter(s => s !== id)
+            : [...prev.students, id],
+    }));
 
     const saveManifest = async () => {
         try {
-            await window.axios.post(`/api/admin/transport/routes/${manifestModal.route.id}/students`, {
-                student_ids: manifestModal.students
+            await window.axios.post(`/api/admin/transport/routes/${manifest.route.id}/students`, {
+                student_ids: manifest.students,
             });
-            window.showToast?.('success', 'Manifest updated');
-            setManifestModal({ show: false, route: null, students: [] });
-        } catch(e) {
-            window.showToast?.('error', 'Failed to sync manifest');
-        }
+            window.showToast?.('success', 'Manifest updated.');
+            setManifest({ show: false, route: null, students: [] });
+        } catch { window.showToast?.('error', 'Failed to sync manifest.'); }
     };
 
+    const tabs = ['vehicles', 'routes', 'drivers'];
+
     return (
-        <div className="space-y-6 animate-page-fade">
-            <div className="flex justify-between items-end">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-800 dark:text-gray-100 tracking-tight">Transport Network</h2>
-                    <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">Manage Vehicles, Routes & Assignments</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Admin <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Transport Network</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Transport Network</h1>
+                </div>
+                <div className="flex gap-2">
+                    {activeTab === 'vehicles' && (
+                        <button onClick={() => { setVForm({ plate_number: '', make: '', model: '', capacity: 30, status: 'Active' }); setShowVehicleModal(true); }}
+                            className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                            + Register Vehicle
+                        </button>
+                    )}
+                    {activeTab === 'routes' && (
+                        <button onClick={() => { setRForm({ name: '', vehicle_id: '', driver_id: '', status: 'Active' }); setShowRouteModal(true); }}
+                            className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                            + Add Route
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <div className="flex space-x-2 border-b border-gray-100 dark:border-gray-800 overflow-x-auto pb-[-1px]">
-                {['vehicles', 'routes', 'drivers'].map(tab => (
+            {/* Tabs */}
+            <div className="flex border-b border-slate-200 dark:border-gray-700 flex-shrink-0">
+                {tabs.map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] border-b-[3px] transition-all whitespace-nowrap ${activeTab === tab ? 'border-purple-600 text-purple-600 dark:text-purple-400 dark:border-purple-500' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
+                        className={`px-4 py-2 text-xs font-bold uppercase tracking-wider capitalize border-b-2 transition-colors ${
+                            activeTab === tab
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                        }`}>
                         {tab}
                     </button>
                 ))}
             </div>
 
-            {loading ? (
-                <div className="py-20 flex flex-col items-center gap-3">
-                    <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loading Network...</p>
-                </div>
-            ) : (
-                <>
-                    {/* ──── VEHICLES TAB ──── */}
-                    {activeTab === 'vehicles' && (
-                        <div className="space-y-4">
-                            <div className="flex justify-start">
-                                <button onClick={() => { setVForm({ plate_number: '', make: '', model: '', capacity: 30, status: 'Active' }); setShowVehicleModal(true); }}
-                                    className="px-6 py-2.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 dark:bg-white dark:text-black hover:scale-105 transition-all">
-                                    + Register Vehicle
-                                </button>
-                            </div>
-                            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                                        <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                            <th className="px-6 py-4">Plate Number</th>
-                                            <th className="px-6 py-4">Make & Model</th>
-                                            <th className="px-6 py-4">Capacity</th>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800 text-sm font-bold">
-                                        {vehicles.map(v => (
-                                            <tr key={v.id} className="hover:bg-purple-50/30 dark:hover:bg-purple-900/10">
-                                                <td className="px-6 py-4 text-gray-800 dark:text-white uppercase tracking-wider">{v.plate_number}</td>
-                                                <td className="px-6 py-4 text-gray-500">{v.make} {v.model}</td>
-                                                <td className="px-6 py-4 text-indigo-600">{v.capacity} Seats</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${v.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{v.status}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button onClick={() => deleteVehicle(v.id)} className="text-[10px] text-red-500 hover:text-red-700 uppercase tracking-wider">Remove</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ──── ROUTES TAB ──── */}
-                    {activeTab === 'routes' && (
-                        <div className="space-y-4">
-                            <div className="flex justify-start">
-                                <button onClick={() => { setRForm({ name: '', vehicle_id: '', driver_id: '', status: 'Active' }); setShowRouteModal(true); }}
-                                    className="px-6 py-2.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 dark:bg-white dark:text-black hover:scale-105 transition-all">
-                                    + Assign New Route
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {routes.map(r => (
-                                    <div key={r.id} className="p-6 bg-white border border-gray-100 rounded-3xl shadow-sm dark:bg-gray-800 dark:border-gray-700 relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 p-4">
-                                            <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase tracking-widest">{r.status}</span>
-                                        </div>
-                                        <h3 className="text-xl font-black text-gray-800 dark:text-white uppercase mb-4">{r.name}</h3>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between p-3 bg-gray-50 rounded-xl dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Driver</span>
-                                                <span className="text-sm font-black text-indigo-900 dark:text-indigo-400">{r.driver}</span>
-                                            </div>
-                                            <div className="flex justify-between p-3 bg-gray-50 rounded-xl dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Bus Plate</span>
-                                                <span className="text-sm font-black text-gray-600 dark:text-gray-300">{r.plate} ({r.capacity} Pax)</span>
-                                            </div>
-                                        </div>
-                                        <div className="mt-4 flex gap-2">
-                                            <button onClick={() => openManifest(r)} className="flex-1 py-3 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Manage Manifest</button>
-                                            <button onClick={() => deleteRoute(r.id)} className="w-[100px] py-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Delete</button>
-                                        </div>
+            {/* Content */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : (
+                    <>
+                        {/* ── Vehicles ── */}
+                        {activeTab === 'vehicles' && (
+                            vehicles.length === 0 ? (
+                                <div className="flex-1 flex items-center justify-center py-16">
+                                    <p className="text-slate-400 text-sm">No vehicles registered yet.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex-1 overflow-auto">
+                                        <table className="w-full text-left" style={{ minWidth: 580 }}>
+                                            <thead className="sticky top-0 z-10">
+                                                <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Plate Number</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-40">Make &amp; Model</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-center">Capacity</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-center">Status</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {vehicles.map((v, i) => (
+                                                    <tr key={v.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors group ${
+                                                        i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                                    }`}>
+                                                        <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                                        <td className="px-3 py-2 text-xs font-mono font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wide">{v.plate_number}</td>
+                                                        <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{v.make} {v.model}</td>
+                                                        <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 text-center">{v.capacity}</td>
+                                                        <td className="px-3 py-2 text-center">
+                                                            <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                                                v.status === 'Active'
+                                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                                                                    : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                                                            }`}>{v.status}</span>
+                                                        </td>
+                                                        <td className="px-3 py-2 text-right">
+                                                            <button onClick={() => deleteVehicle(v.id)}
+                                                                className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                Remove
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ──── DRIVERS TAB ──── */}
-                    {activeTab === 'drivers' && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700 p-8">
-                            <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-6">Registered Drivers</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {drivers.map(d => (
-                                    <div key={d.id} className="p-4 border-2 border-indigo-50 rounded-2xl dark:border-gray-700 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-black text-xl">
-                                            {d.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-sm text-gray-800 dark:text-gray-100 uppercase tracking-tight">{d.name}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 ml-0.5">{d.email}</p>
-                                        </div>
+                                    <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{vehicles.length} vehicles</p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
+                                </>
+                            )
+                        )}
+
+                        {/* ── Routes ── */}
+                        {activeTab === 'routes' && (
+                            routes.length === 0 ? (
+                                <div className="flex-1 flex items-center justify-center py-16">
+                                    <p className="text-slate-400 text-sm">No routes configured yet.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex-1 overflow-auto">
+                                        <table className="w-full text-left" style={{ minWidth: 640 }}>
+                                            <thead className="sticky top-0 z-10">
+                                                <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Route Name</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-36">Driver</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Bus</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Status</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {routes.map((r, i) => (
+                                                    <tr key={r.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors group ${
+                                                        i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                                    }`}>
+                                                        <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                                        <td className="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100">{r.name}</td>
+                                                        <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{r.driver || '—'}</td>
+                                                        <td className="px-3 py-2 text-xs font-mono text-slate-400">{r.plate || '—'}</td>
+                                                        <td className="px-3 py-2 text-center">
+                                                            <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                                                r.status === 'Active'
+                                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                                                                    : 'bg-slate-100 dark:bg-gray-700 text-slate-500'
+                                                            }`}>{r.status}</span>
+                                                        </td>
+                                                        <td className="px-3 py-2 text-right">
+                                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button onClick={() => openManifest(r)}
+                                                                    className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                                    Manifest
+                                                                </button>
+                                                                <button onClick={() => deleteRoute(r.id)}
+                                                                    className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition-colors">
+                                                                    Del
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{routes.length} routes</p>
+                                    </div>
+                                </>
+                            )
+                        )}
+
+                        {/* ── Drivers ── */}
+                        {activeTab === 'drivers' && (
+                            drivers.length === 0 ? (
+                                <div className="flex-1 flex items-center justify-center py-16">
+                                    <p className="text-slate-400 text-sm">No drivers registered. Add a driver as a staff member with role "Driver".</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex-1 overflow-auto">
+                                        <table className="w-full text-left" style={{ minWidth: 480 }}>
+                                            <thead className="sticky top-0 z-10">
+                                                <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Driver</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-48">Email</th>
+                                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Phone</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {drivers.map((d, i) => (
+                                                    <tr key={d.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                        i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                                    }`}>
+                                                        <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                                                                    {d.name.charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{d.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2 text-xs text-slate-400">{d.email}</td>
+                                                        <td className="px-3 py-2 text-xs text-slate-400">{d.phone || '—'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{drivers.length} drivers</p>
+                                    </div>
+                                </>
+                            )
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* Vehicle Modal */}
             {showVehicleModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl p-8 shadow-2xl">
-                        <h3 className="text-lg font-black uppercase tracking-tighter mb-6 text-gray-800 dark:text-white">Register Vehicle</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Plate Number</label>
-                                <input value={vForm.plate_number} onChange={e => setVForm({...vForm, plate_number: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700 uppercase" placeholder="KCB 123G" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Make</label>
-                                    <input value={vForm.make} onChange={e => setVForm({...vForm, make: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700" placeholder="Toyota" />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Model</label>
-                                    <input value={vForm.model} onChange={e => setVForm({...vForm, model: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700" placeholder="Coaster" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Seat Capacity</label>
-                                <input type="number" value={vForm.capacity} onChange={e => setVForm({...vForm, capacity: +e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700" />
-                            </div>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm border border-slate-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg">
+                            <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Register Vehicle</h3>
+                            <button onClick={() => setShowVehicleModal(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
                         </div>
-                        <div className="mt-8 flex gap-3">
-                            <button onClick={() => setShowVehicleModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-500 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200">Cancel</button>
-                            <button onClick={saveVehicle} className="flex-1 py-3 bg-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-purple-200 hover:bg-purple-700 dark:shadow-none">Save Vehicle</button>
+                        <div className="p-5 space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Plate Number</label>
+                                <input value={vForm.plate_number} onChange={e => setVForm({...vForm, plate_number: e.target.value})}
+                                    placeholder="KCB 123G" className={inputCls + ' uppercase'}/>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Make</label>
+                                    <input value={vForm.make} onChange={e => setVForm({...vForm, make: e.target.value})}
+                                        placeholder="Toyota" className={inputCls}/>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Model</label>
+                                    <input value={vForm.model} onChange={e => setVForm({...vForm, model: e.target.value})}
+                                        placeholder="Coaster" className={inputCls}/>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Seat Capacity</label>
+                                <input type="number" value={vForm.capacity}
+                                    onChange={e => setVForm({...vForm, capacity: +e.target.value})} className={inputCls}/>
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                                <button onClick={saveVehicle}
+                                    className="flex-1 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                                    Save Vehicle
+                                </button>
+                                <button onClick={() => setShowVehicleModal(false)}
+                                    className="flex-1 py-2 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,67 +363,97 @@ const TransportOps = () => {
 
             {/* Route Modal */}
             {showRouteModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl p-8 shadow-2xl">
-                        <h3 className="text-lg font-black uppercase tracking-tighter mb-6 text-gray-800 dark:text-white">Assign Route</h3>
-                        <div className="space-y-4">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm border border-slate-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg">
+                            <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Add Route</h3>
+                            <button onClick={() => setShowRouteModal(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                        </div>
+                        <div className="p-5 space-y-4">
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Route Name</label>
-                                <input value={rForm.name} onChange={e => setRForm({...rForm, name: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700 uppercase" placeholder="KILIMANI - CBD" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Route Name</label>
+                                <input value={rForm.name} onChange={e => setRForm({...rForm, name: e.target.value})}
+                                    placeholder="KILIMANI — CBD" className={inputCls}/>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Assign Bus (Vehicle)</label>
-                                <select value={rForm.vehicle_id} onChange={e => setRForm({...rForm, vehicle_id: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700">
-                                    <option value="">-- No Bus --</option>
-                                    {vehicles.map(v => <option key={v.id} value={v.id}>{v.plate_number} ({v.capacity} Pax)</option>)}
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Assign Bus</label>
+                                <select value={rForm.vehicle_id} onChange={e => setRForm({...rForm, vehicle_id: e.target.value})} className={inputCls}>
+                                    <option value="">— No Bus —</option>
+                                    {vehicles.map(v => <option key={v.id} value={v.id}>{v.plate_number} ({v.capacity} pax)</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Assign Driver</label>
-                                <select value={rForm.driver_id} onChange={e => setRForm({...rForm, driver_id: e.target.value})} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold dark:bg-gray-900 dark:border-gray-700">
-                                    <option value="">-- No Driver --</option>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Assign Driver</label>
+                                <select value={rForm.driver_id} onChange={e => setRForm({...rForm, driver_id: e.target.value})} className={inputCls}>
+                                    <option value="">— No Driver —</option>
                                     {drivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                 </select>
                             </div>
-                        </div>
-                        <div className="mt-8 flex gap-3">
-                            <button onClick={() => setShowRouteModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-500 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200">Cancel</button>
-                            <button onClick={saveRoute} className="flex-1 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 dark:shadow-none">Save Route</button>
+                            <div className="flex gap-2 pt-1">
+                                <button onClick={saveRoute}
+                                    className="flex-1 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                                    Save Route
+                                </button>
+                                <button onClick={() => setShowRouteModal(false)}
+                                    className="flex-1 py-2 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Manifest Modal */}
-            {manifestModal.show && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 py-10">
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-3xl p-8 shadow-2xl flex flex-col max-h-full">
-                        <h3 className="text-lg font-black uppercase tracking-tighter mb-1 text-gray-800 dark:text-white">Passenger Manifest</h3>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Route: {manifestModal.route.name}</p>
-                        
-                        <div className="flex-1 overflow-y-auto min-h-0 space-y-2 border border-gray-100 dark:border-gray-700 rounded-2xl p-2 bg-gray-50/50 dark:bg-gray-900/50">
-                            {allStudents.map(student => {
-                                const isAssigned = manifestModal.students.includes(student.id);
-                                return (
-                                    <div key={student.id} onClick={() => toggleManifestStudent(student.id)}
-                                        className={`p-3 rounded-xl cursor-pointer flex justify-between items-center transition-all border-2 ${isAssigned ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800' : 'bg-white border-transparent hover:border-gray-200 dark:bg-gray-800 dark:hover:border-gray-700'}`}>
-                                        <div>
-                                            <p className={`text-sm font-black uppercase ${isAssigned ? 'text-indigo-800 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-200'}`}>
-                                                {student.first_name} {student.last_name}
-                                            </p>
-                                            <p className="text-[10px] font-bold text-gray-400 mt-0.5">ADM: {student.admission_number}</p>
-                                        </div>
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isAssigned ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-transparent dark:bg-gray-700'}`}>
-                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+            {manifest.show && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg border border-slate-200 dark:border-gray-700 flex flex-col max-h-[80vh]">
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg flex-shrink-0">
+                            <div>
+                                <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Passenger Manifest</h3>
+                                <p className="text-[10px] text-slate-400 mt-0.5">Route: {manifest.route.name}</p>
+                            </div>
+                            <button onClick={() => setManifest({ show: false, route: null, students: [] })}
+                                className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
                         </div>
-
-                        <div className="mt-8 flex gap-3 flex-shrink-0">
-                            <button onClick={() => setManifestModal({ show: false, route: null, students: [] })} className="flex-1 py-3 bg-gray-100 text-gray-500 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200">Close</button>
-                            <button onClick={saveManifest} className="flex-1 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 dark:shadow-none">Save Manifest</button>
+                        <div className="flex-1 overflow-auto p-3">
+                            <div className="space-y-1">
+                                {allStudents.map(student => {
+                                    const isAssigned = manifest.students.includes(student.id);
+                                    return (
+                                        <div key={student.id} onClick={() => toggleStudent(student.id)}
+                                            className={`px-3 py-2 rounded-md cursor-pointer flex items-center justify-between transition-colors border ${
+                                                isAssigned
+                                                    ? 'bg-primary/5 border-primary/30 dark:bg-primary/10'
+                                                    : 'bg-white dark:bg-gray-700 border-slate-100 dark:border-gray-600 hover:border-slate-300'
+                                            }`}>
+                                            <div>
+                                                <p className={`text-xs font-semibold ${isAssigned ? 'text-primary' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                    {student.first_name} {student.last_name}
+                                                </p>
+                                                <p className="text-[10px] font-mono text-slate-400">ADM: {student.admission_number}</p>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${isAssigned ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-gray-600'}`}>
+                                                {isAssigned && (
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="flex-shrink-0 flex gap-2 px-5 py-3.5 border-t border-slate-100 dark:border-gray-700">
+                            <button onClick={saveManifest}
+                                className="flex-1 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                                Save Manifest ({manifest.students.length} assigned)
+                            </button>
+                            <button onClick={() => setManifest({ show: false, route: null, students: [] })}
+                                className="flex-1 py-2 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>

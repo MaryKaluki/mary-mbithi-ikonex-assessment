@@ -1,107 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
+
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+const APPLICABLE_LABELS = { all: 'All', boarding: 'Boarding', day: 'Day' };
 
 const FeeAmounts = () => {
-    const [selectedClass, setSelectedClass] = useState('all');
-    const [showModal, setShowModal] = useState(false);
+    const [structures, setStructures] = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [expanded, setExpanded]     = useState({});
 
-    const feeAmounts = [
-        { id: 1, feeHead: 'Tuition Fee', class: 'Grade 1', term1: 12000, term2: 12000, term3: 12000, annual: 36000 },
-        { id: 2, feeHead: 'Tuition Fee', class: 'Grade 2', term1: 12000, term2: 12000, term3: 12000, annual: 36000 },
-        { id: 3, feeHead: 'Tuition Fee', class: 'Grade 3', term1: 13000, term2: 13000, term3: 13000, annual: 39000 },
-        { id: 4, feeHead: 'Library Fee', class: 'All Classes', term1: 500, term2: 0, term3: 0, annual: 500 },
-        { id: 5, feeHead: 'Sports Fee', class: 'All Classes', term1: 800, term2: 0, term3: 0, annual: 800 },
-        { id: 6, feeHead: 'Lab Fee', class: 'Grade 3+', term1: 500, term2: 500, term3: 500, annual: 1500 },
-        { id: 7, feeHead: 'Transport Fee', class: 'All Classes', term1: 4000, term2: 4000, term3: 4000, annual: 12000 },
-    ];
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await window.axios.get('/api/finance/fee-structures');
+            setStructures(res.data);
+        } catch { /* silent */ }
+        finally { setLoading(false); }
+    };
 
-    const classes = ['all', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'];
+    useEffect(() => { fetchData(); }, []);
+
+    const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Set Fee Amounts</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Configure fee amounts per class and term</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Finance <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Fee Amounts</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Fee Amounts by Structure</h1>
                 </div>
-                <button onClick={() => setShowModal(true)} className="px-6 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors">
-                    + Add Fee Amount
+                <button onClick={fetchData}
+                    className="px-4 py-1.5 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                    Refresh
                 </button>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-                {classes.map(cls => (
-                    <button
-                        key={cls}
-                        onClick={() => setSelectedClass(cls)}
-                        className={`px-4 py-2 rounded-lg font-medium text-sm ${selectedClass === cls ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}
-                    >
-                        {cls === 'all' ? 'All Classes' : cls}
-                    </button>
-                ))}
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left min-w-[800px]">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th className="px-4 py-3">Fee Head</th>
-                            <th className="px-4 py-3">Applicable To</th>
-                            <th className="px-4 py-3 text-right">Term 1</th>
-                            <th className="px-4 py-3 text-right">Term 2</th>
-                            <th className="px-4 py-3 text-right">Term 3</th>
-                            <th className="px-4 py-3 text-right bg-purple-50 dark:bg-purple-900/20">Annual Total</th>
-                            <th className="px-4 py-3 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {feeAmounts.map(fee => (
-                            <tr key={fee.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{fee.feeHead}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{fee.class}</td>
-                                <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{fee.term1 > 0 ? `KSh ${fee.term1.toLocaleString()}` : '-'}</td>
-                                <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{fee.term2 > 0 ? `KSh ${fee.term2.toLocaleString()}` : '-'}</td>
-                                <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{fee.term3 > 0 ? `KSh ${fee.term3.toLocaleString()}` : '-'}</td>
-                                <td className="px-4 py-3 text-right font-bold text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400">KSh {fee.annual.toLocaleString()}</td>
-                                <td className="px-4 py-3 text-right">
-                                    <button className="text-purple-600 font-medium text-sm hover:underline dark:text-purple-400">Edit</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-lg dark:bg-gray-800">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">Set Fee Amount</h3>
-                        <div className="space-y-4">
-                            <select className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option>Select Fee Head</option>
-                                <option>Tuition Fee</option>
-                                <option>Library Fee</option>
-                                <option>Lab Fee</option>
-                                <option>Sports Fee</option>
-                                <option>Transport Fee</option>
-                            </select>
-                            <select className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option>Select Class</option>
-                                <option>All Classes</option>
-                                {classes.filter(c => c !== 'all').map(c => <option key={c}>{c}</option>)}
-                            </select>
-                            <div className="grid grid-cols-3 gap-3">
-                                <input type="number" placeholder="Term 1" className="px-4 py-3 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                                <input type="number" placeholder="Term 2" className="px-4 py-3 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                                <input type="number" placeholder="Term 3" className="px-4 py-3 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                            </div>
-                        </div>
-                        <div className="flex gap-3 mt-6">
-                            <button className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700">Save</button>
-                            <button onClick={() => setShowModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-600 font-bold rounded-lg dark:bg-gray-700 dark:text-gray-300">Cancel</button>
-                        </div>
+            {/* Stats */}
+            {!loading && (
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800">
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{structures.length}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Fee Structures</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
+                            {structures.reduce((a, s) => a + (s.items?.length ?? 0), 0)}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Fee Items</span>
                     </div>
                 </div>
             )}
+
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : (
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 700 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8"></th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Structure / Fee Item</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Grade</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20">Applies To</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Optional</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right bg-slate-700">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {structures.map((s, si) => (
+                                        <React.Fragment key={s.id}>
+                                            {/* Structure header row */}
+                                            <tr
+                                                className={`border-b border-slate-100 dark:border-gray-700/60 cursor-pointer select-none ${
+                                                    si % 2 === 0 ? 'bg-slate-50 dark:bg-gray-900/20' : 'bg-slate-100/70 dark:bg-gray-900/40'
+                                                }`}
+                                                onClick={() => toggle(s.id)}
+                                            >
+                                                <td className="px-3 py-2 text-[11px] font-mono text-slate-400">
+                                                    <span className="select-none">{expanded[s.id] ? '▾' : '▸'}</span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">{s.name}</td>
+                                                <td className="px-3 py-2 text-xs text-slate-500">{s.grade_level || 'All'}</td>
+                                                <td className="px-3 py-2 text-xs text-slate-500">—</td>
+                                                <td className="px-3 py-2 text-center text-xs text-slate-400">—</td>
+                                                <td className="px-3 py-2 text-right text-xs font-bold font-mono text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800/60">
+                                                    KSh {Number(s.total_amount).toLocaleString()}
+                                                </td>
+                                            </tr>
+                                            {/* Expanded items */}
+                                            {expanded[s.id] && (s.items || []).map((item, ii) => (
+                                                <tr key={item.id} className={`border-b border-slate-50 dark:border-gray-700/40 ${
+                                                    ii % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/50 dark:bg-gray-900/20'
+                                                }`}>
+                                                    <td className="px-3 py-1.5"></td>
+                                                    <td className="px-3 py-1.5 pl-6 text-xs text-slate-700 dark:text-slate-300">{item.name}</td>
+                                                    <td className="px-3 py-1.5 text-xs text-slate-400">—</td>
+                                                    <td className="px-3 py-1.5 text-[10px] text-slate-400 capitalize">
+                                                        {APPLICABLE_LABELS[item.applicable_to] || item.applicable_to}
+                                                    </td>
+                                                    <td className="px-3 py-1.5 text-center">
+                                                        {item.is_optional ? (
+                                                            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded">Opt</span>
+                                                        ) : (
+                                                            <span className="text-[10px] text-slate-300">—</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-1.5 text-right text-xs font-mono text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-gray-800/50">
+                                                        KSh {Number(item.amount).toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </React.Fragment>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {structures.length === 0 && (
+                                <div className="py-12 text-center text-xs text-slate-400 italic">No fee structures configured.</div>
+                            )}
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{structures.length} structure{structures.length !== 1 ? 's' : ''} · click row to expand</p>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };

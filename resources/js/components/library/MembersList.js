@@ -1,136 +1,138 @@
 import React, { useState } from 'react';
 
+const inputCls = "px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+const MEMBERS = [
+    { id: 1, name: 'Tommy Smith',   type: 'Student', grade: 'Grade 4A',       booksOut: 2, limit: 3,  status: 'active'    },
+    { id: 2, name: 'Alice Brown',   type: 'Student', grade: 'Grade 5B',       booksOut: 1, limit: 3,  status: 'active'    },
+    { id: 3, name: 'John Doe',      type: 'Student', grade: 'Grade 6A',       booksOut: 3, limit: 3,  status: 'maxed'     },
+    { id: 4, name: 'Sarah Connor',  type: 'Staff',   grade: 'Science Teacher',booksOut: 4, limit: 5,  status: 'active'    },
+    { id: 5, name: 'Emily Davis',   type: 'Staff',   grade: 'Librarian',      booksOut: 0, limit: 10, status: 'active'    },
+    { id: 6, name: 'Mike Johnson',  type: 'Student', grade: 'Grade 3C',       booksOut: 0, limit: 3,  status: 'suspended' },
+];
+
+const statusBadge = (s) => ({
+    active:    'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    maxed:     'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    suspended: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+}[s] || 'bg-slate-100 text-slate-600');
+
 const MembersList = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
 
-    const members = [
-        { id: 1, name: 'Tommy Smith', type: 'Student', grade: 'Grade 4A', booksOut: 2, limit: 3, status: 'active' },
-        { id: 2, name: 'Alice Brown', type: 'Student', grade: 'Grade 5B', booksOut: 1, limit: 3, status: 'active' },
-        { id: 3, name: 'John Doe', type: 'Student', grade: 'Grade 6A', booksOut: 3, limit: 3, status: 'maxed' },
-        { id: 4, name: 'Sarah Connor', type: 'Staff', grade: 'Science Teacher', booksOut: 4, limit: 5, status: 'active' },
-        { id: 5, name: 'Emily Davis', type: 'Staff', grade: 'Librarian', booksOut: 0, limit: 10, status: 'active' },
-        { id: 6, name: 'Mike Johnson', type: 'Student', grade: 'Grade 3C', booksOut: 0, limit: 3, status: 'suspended' },
-    ];
-
-    const filteredMembers = members.filter(m => {
-        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.grade.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = filter === 'all' || m.type.toLowerCase() === filter || m.status === filter;
-        return matchesSearch && matchesFilter;
+    const filtered = MEMBERS.filter(m => {
+        const q = search.toLowerCase();
+        const matchQ = !q || m.name.toLowerCase().includes(q) || m.grade.toLowerCase().includes(q);
+        const matchF = filter === 'all' || m.type.toLowerCase() === filter || m.status === filter;
+        return matchQ && matchF;
     });
 
-    const getStatusBadge = (status) => {
-        const styles = {
-            active: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300',
-            maxed: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300',
-            suspended: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300',
-        };
-        return styles[status] || styles.active;
-    };
-
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Library Members</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Students and staff with active library accounts.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Library <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Members</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Library Members</h1>
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{members.length}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Members</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{members.filter(m => m.status === 'active').length}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Active</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{members.reduce((a, b) => a + b.booksOut, 0)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Books Borrowed</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{members.filter(m => m.status === 'suspended').length}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Suspended</p>
-                </div>
+            {/* Stats strip */}
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                {[
+                    { label: 'Total Members',  value: MEMBERS.length,                                   cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                    { label: 'Active',         value: MEMBERS.filter(m => m.status === 'active').length, cls: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' },
+                    { label: 'Books Borrowed', value: MEMBERS.reduce((a, b) => a + b.booksOut, 0),       cls: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20' },
+                    { label: 'Suspended',      value: MEMBERS.filter(m => m.status === 'suspended').length, cls: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' },
+                ].map(c => (
+                    <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{c.value}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                    </div>
+                ))}
             </div>
 
-            {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 dark:bg-gray-800 dark:border-gray-700">
-                <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Search by name or class..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                    />
+            {/* Filter bar */}
+            <div className="flex flex-wrap gap-2 items-end flex-shrink-0">
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Search</label>
+                    <input value={search} onChange={e => setSearch(e.target.value)}
+                        placeholder="Name or class…" className={inputCls + ' w-48'}/>
                 </div>
-                <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                    <option value="all">All Members</option>
-                    <option value="student">Students Only</option>
-                    <option value="staff">Staff Only</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
-                </select>
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Filter</label>
+                    <select value={filter} onChange={e => setFilter(e.target.value)} className={inputCls}>
+                        <option value="all">All Members</option>
+                        <option value="student">Students</option>
+                        <option value="staff">Staff</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left min-w-[700px]">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th className="px-6 py-4">Member</th>
-                            <th className="px-6 py-4">Type</th>
-                            <th className="px-6 py-4 text-center">Books Out</th>
-                            <th className="px-6 py-4 text-center">Limit</th>
-                            <th className="px-6 py-4 text-center">Status</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {filteredMembers.map((member) => (
-                            <tr key={member.id} className="hover:bg-purple-50 transition-colors dark:hover:bg-gray-700">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm mr-3 dark:bg-purple-900/50 dark:text-purple-300">
-                                            {member.name.split(' ').map(n => n[0]).join('')}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800 dark:text-gray-100">{member.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{member.grade}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${member.type === 'Staff' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
-                                        {member.type}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-center font-bold text-gray-800 dark:text-gray-100">{member.booksOut}</td>
-                                <td className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">{member.limit}</td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize ${getStatusBadge(member.status)}`}>
-                                        {member.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="text-purple-600 font-bold text-sm hover:underline dark:text-purple-400">View Books</button>
-                                </td>
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div className="flex-1 overflow-auto">
+                    <table className="w-full text-left" style={{ minWidth: 600 }}>
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Member</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20">Type</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Out</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Limit</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Status</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filtered.map((m, i) => (
+                                <tr key={m.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                    i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                }`}>
+                                    <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                        {String(i + 1).padStart(2, '0')}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{m.name}</p>
+                                        <p className="text-[10px] text-slate-400">{m.grade}</p>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                            m.type === 'Staff'
+                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                                : 'bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300'
+                                        }`}>{m.type}</span>
+                                    </td>
+                                    <td className="px-3 py-2 text-center text-xs font-bold text-slate-700 dark:text-slate-200">{m.booksOut}</td>
+                                    <td className="px-3 py-2 text-center text-xs text-slate-400">{m.limit}</td>
+                                    <td className="px-3 py-2">
+                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${statusBadge(m.status)}`}>
+                                            {m.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-3 py-2 text-right">
+                                        <button className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {filtered.length === 0 && (
+                        <div className="py-12 text-center text-xs text-slate-400 italic">No members match your filter.</div>
+                    )}
+                </div>
+                <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{filtered.length} member{filtered.length !== 1 ? 's' : ''}</p>
+                </div>
             </div>
         </div>
     );

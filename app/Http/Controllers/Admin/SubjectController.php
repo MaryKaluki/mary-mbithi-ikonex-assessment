@@ -10,17 +10,46 @@ class SubjectController extends Controller
 {
     /**
      * Return only subjects belonging to the authenticated user's school.
-     * Explicit school_id scoping here is defense-in-depth on top of the
-     * global SchoolScope applied automatically by the BelongsToTenant trait.
+     * Optionally filters subjects matching the grade level of the passed class_id.
      */
-    public function index()
+    public function index(Request $request)
     {
         $schoolId = auth()->user()->school_id;
+        $classId = $request->query('class_id');
+
+        $query = Subject::where('school_id', $schoolId);
+
+        if ($classId) {
+            $class = \App\Models\SchoolClass::where('school_id', $schoolId)->find($classId);
+            if ($class) {
+                $className = strtolower($class->name);
+                
+                $gradeKey = null;
+                for ($i = 1; $i <= 9; $i++) {
+                    if (str_contains($className, "grade {$i}") || str_contains($className, "grade{$i}")) {
+                        $gradeKey = "grade_{$i}";
+                        break;
+                    }
+                }
+                if (!$gradeKey) {
+                    for ($i = 1; $i <= 4; $i++) {
+                        if (str_contains($className, "form {$i}") || str_contains($className, "form{$i}")) {
+                            $gradeKey = "form_{$i}";
+                            break;
+                        }
+                    }
+                }
+
+                if ($gradeKey) {
+                    $query->whereJsonContains('grade_levels', $gradeKey);
+                } else {
+                    $query->where('curriculum_type', $class->curriculum_type);
+                }
+            }
+        }
 
         return response()->json(
-            Subject::where('school_id', $schoolId)
-                ->orderBy('name')
-                ->get()
+            $query->orderBy('name')->get()
         );
     }
 
@@ -39,6 +68,13 @@ class SubjectController extends Controller
         $data['school_id'] = auth()->user()->school_id;
 
         return response()->json(Subject::create($data), 201);
+    }
+
+    public function show($id)
+    {
+        $schoolId = auth()->user()->school_id;
+        $subject = Subject::where('school_id', $schoolId)->findOrFail($id);
+        return response()->json($subject);
     }
 
     public function update(Request $request, $id)

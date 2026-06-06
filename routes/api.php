@@ -5,6 +5,26 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Platform\DashboardController;
 use App\Http\Controllers\Platform\SchoolController;
 use App\Http\Controllers\Platform\SubscriptionController;
+use App\Http\Controllers\Accountant\FeeStructureController;
+use App\Http\Controllers\Accountant\InvoiceController;
+use App\Http\Controllers\Accountant\PaymentController;
+use App\Http\Controllers\Accountant\ReceiptController;
+use App\Http\Controllers\Accountant\DefaulterController;
+use App\Http\Controllers\Accountant\DiscountController;
+use App\Http\Controllers\Accountant\SponsorshipController;
+use App\Http\Controllers\Accountant\SurchargeController;
+use App\Http\Controllers\Accountant\DailyCollectionController;
+use App\Http\Controllers\Accountant\FinanceDashboardController;
+use App\Http\Controllers\Accountant\ExpenseCategoryController;
+use App\Http\Controllers\Accountant\ExpenseController;
+use App\Http\Controllers\Accountant\PettyCashController;
+use App\Http\Controllers\Accountant\FundTransferController;
+use App\Http\Controllers\Accountant\BankAccountController;
+use App\Http\Controllers\Accountant\BankReconciliationController;
+use App\Http\Controllers\Accountant\MpesaController;
+use App\Http\Controllers\Accountant\FinanceReportController;
+use App\Http\Controllers\Accountant\ClearanceController;
+use App\Http\Controllers\Accountant\QuickBooksController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +78,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'tenant.acti
 
         Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::get('students', [\App\Http\Controllers\Admin\StudentController::class, 'index']);
+        Route::get('students/{id}', [\App\Http\Controllers\Admin\StudentController::class, 'show']);
         Route::post('students/admit', [\App\Http\Controllers\Admin\StudentController::class, 'store']);
         Route::put('students/{id}', [\App\Http\Controllers\Admin\StudentController::class, 'update']);
         Route::delete('students', [\App\Http\Controllers\Admin\StudentController::class, 'destroy']);
@@ -95,6 +116,12 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'tenant.acti
         Route::put('transport/vehicles/{id}', [\App\Http\Controllers\Admin\TransportController::class, 'updateVehicle']);
         Route::delete('transport/vehicles/{id}', [\App\Http\Controllers\Admin\TransportController::class, 'destroyVehicle']);
         Route::get('transport/drivers', [\App\Http\Controllers\Admin\TransportController::class, 'drivers']);
+
+        // Transport Billing (Phase 5A) — admin manages fee_per_term on routes
+        Route::get('transport/billing',          [\App\Http\Controllers\Admin\TransportController::class, 'billingOverview']);
+        Route::post('transport/billing/generate',[\App\Http\Controllers\Accountant\InvoiceController::class, 'generateTransportInvoices']);
+        Route::patch('transport/routes/{id}/fee', [\App\Http\Controllers\Admin\TransportController::class, 'updateRouteFee']);
+        Route::patch('dorms/{id}/fee',            [\App\Http\Controllers\Admin\DormController::class, 'updateDormFee']);
 
         // Dormitories
         Route::get('dorms', [\App\Http\Controllers\Admin\DormController::class, 'index']);
@@ -168,7 +195,9 @@ Route::group(['prefix' => 'teacher', 'middleware' => ['auth:sanctum', 'tenant.ac
 
     // Report Cards
     Route::get('report-card/students',        [\App\Http\Controllers\Teacher\ReportCardController::class, 'students']);
+    Route::get('report-card/{studentId}/pdf', [\App\Http\Controllers\Teacher\ReportCardController::class, 'downloadPdf']);
     Route::get('report-card/{studentId}',     [\App\Http\Controllers\Teacher\ReportCardController::class, 'show']);
+    Route::get('class-performance/pdf',       [\App\Http\Controllers\Teacher\ReportCardController::class, 'downloadClassPdf']);
 
     // Documents (shared logic)
     Route::get('documents/teachers', [\App\Http\Controllers\Admin\DocumentController::class, 'getTeachers']);
@@ -264,7 +293,168 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('notices',         [\App\Http\Controllers\Admin\NoticeController::class, 'index']);
     Route::post('notices',        [\App\Http\Controllers\Admin\NoticeController::class, 'store']);
     Route::delete('notices/{id}', [\App\Http\Controllers\Admin\NoticeController::class, 'destroy']);
-    
+
     // School Calendar Events (Read-only for all staff/users)
     Route::get('events',          [\App\Http\Controllers\Admin\EventController::class, 'index']);
+});
+
+// ── Finance / Accountant ──────────────────────────────────────────────────────
+Route::group([
+    'prefix'     => 'finance',
+    'middleware' => ['auth:sanctum', 'tenant.active'],
+], function () {
+
+    // Dashboard KPI
+    Route::get('dashboard/summary', [FinanceDashboardController::class, 'summary']);
+
+    // Fee Structures
+    Route::get('fee-structures',            [FeeStructureController::class, 'index']);
+    Route::post('fee-structures',           [FeeStructureController::class, 'store']);
+    Route::get('fee-structures/{id}',       [FeeStructureController::class, 'show']);
+    Route::put('fee-structures/{id}',       [FeeStructureController::class, 'update']);
+    Route::delete('fee-structures/{id}',    [FeeStructureController::class, 'destroy']);
+
+    // Invoices
+    Route::get('invoices',                  [InvoiceController::class, 'index']);
+    Route::post('invoices',                 [InvoiceController::class, 'store']);
+    Route::post('invoices/bulk-issue',      [InvoiceController::class, 'bulkIssue']);
+    Route::get('invoices/{id}',             [InvoiceController::class, 'show']);
+    Route::patch('invoices/{id}/cancel',    [InvoiceController::class, 'cancel']);
+
+    // Payments & Receipts
+    Route::post('payments',                 [PaymentController::class, 'store']);
+    Route::patch('payments/{id}/reverse',   [PaymentController::class, 'reverse']);
+    Route::get('receipts',                  [ReceiptController::class, 'index']);
+    Route::get('receipts/{id}',             [ReceiptController::class, 'show']);
+    Route::post('receipts/{id}/email',      [ReceiptController::class, 'email']);
+    Route::post('receipts/{id}/sms',        [ReceiptController::class, 'sms']);
+
+    // Student ledger & statement
+    Route::get('students/{id}/ledger',      [PaymentController::class, 'ledger']);
+    Route::get('students/{id}/statement',   [PaymentController::class, 'statement']);
+
+    // Defaulters
+    Route::get('defaulters',                [DefaulterController::class, 'index']);
+
+    // Discounts
+    Route::get('discounts',                 [DiscountController::class, 'index']);
+    Route::post('discounts',                [DiscountController::class, 'store']);
+    Route::delete('discounts/{id}',         [DiscountController::class, 'destroy']);
+
+    // Sponsorships
+    Route::get('sponsorships',              [SponsorshipController::class, 'index']);
+    Route::post('sponsorships',             [SponsorshipController::class, 'store']);
+    Route::put('sponsorships/{id}',         [SponsorshipController::class, 'update']);
+    Route::delete('sponsorships/{id}',      [SponsorshipController::class, 'destroy']);
+
+    // Surcharges
+    Route::get('surcharges',                [SurchargeController::class, 'index']);
+    Route::post('surcharges',               [SurchargeController::class, 'store']);
+
+    // Daily Collection report
+    Route::get('daily-collection',          [DailyCollectionController::class, 'index']);
+
+    // Expense Categories
+    Route::get('expense-categories',             [ExpenseCategoryController::class, 'index']);
+    Route::post('expense-categories',            [ExpenseCategoryController::class, 'store']);
+    Route::put('expense-categories/{id}',        [ExpenseCategoryController::class, 'update']);
+    Route::delete('expense-categories/{id}',     [ExpenseCategoryController::class, 'destroy']);
+
+    // Expenses
+    Route::get('expenses',                       [ExpenseController::class, 'index']);
+    Route::post('expenses',                      [ExpenseController::class, 'store']);
+    Route::get('expenses/budget-vs-actual',      [ExpenseController::class, 'budgetVsActual']);
+    Route::get('expenses/{id}',                  [ExpenseController::class, 'show']);
+    Route::patch('expenses/{id}/approve',        [ExpenseController::class, 'approve']);
+    Route::patch('expenses/{id}/reject',         [ExpenseController::class, 'reject']);
+    Route::patch('expenses/{id}/pay',            [ExpenseController::class, 'markPaid']);
+    Route::delete('expenses/{id}',               [ExpenseController::class, 'destroy']);
+
+    // Petty Cash
+    Route::get('petty-cash',                                  [PettyCashController::class, 'index']);
+    Route::post('petty-cash',                                  [PettyCashController::class, 'storeAccount']);
+    Route::get('petty-cash/{accountId}/transactions',          [PettyCashController::class, 'transactions']);
+    Route::post('petty-cash/{accountId}/top-up',               [PettyCashController::class, 'topUp']);
+    Route::post('petty-cash/{accountId}/spend',                [PettyCashController::class, 'spend']);
+
+    // Fund Transfers
+    Route::get('fund-transfers',                 [FundTransferController::class, 'index']);
+    Route::post('fund-transfers',                [FundTransferController::class, 'store']);
+    Route::patch('fund-transfers/{id}/approve',  [FundTransferController::class, 'approve']);
+    Route::patch('fund-transfers/{id}/execute',  [FundTransferController::class, 'execute']);
+    Route::patch('fund-transfers/{id}/reject',   [FundTransferController::class, 'reject']);
+
+    // Bank Accounts
+    Route::get('bank-accounts',             [BankAccountController::class, 'index']);
+    Route::post('bank-accounts',            [BankAccountController::class, 'store']);
+    Route::put('bank-accounts/{id}',        [BankAccountController::class, 'update']);
+    Route::delete('bank-accounts/{id}',     [BankAccountController::class, 'destroy']);
+
+    // Bank Reconciliation & Statements
+    Route::get('bank-statements',                         [BankReconciliationController::class, 'index']);
+    Route::get('bank-statements/summary',                 [BankReconciliationController::class, 'summary']);
+    Route::post('bank-statements/import',                 [BankReconciliationController::class, 'import']);
+    Route::post('bank-statements/reconcile',              [BankReconciliationController::class, 'reconcile']);
+    Route::patch('bank-statements/{id}/match',            [BankReconciliationController::class, 'manualMatch']);
+    Route::patch('bank-statements/{id}/unmatch',          [BankReconciliationController::class, 'unmatch']);
+
+    // M-Pesa transactions (authenticated management endpoints)
+    Route::get('mpesa-c2b',                  [MpesaController::class, 'index']);
+    Route::post('mpesa-c2b/sync',            [MpesaController::class, 'sync']);
+    Route::post('mpesa-c2b/{id}/match',      [MpesaController::class, 'match']);
+    Route::post('mpesa/stk-push',            [MpesaController::class, 'stkPush']);
+    Route::get('mpesa/cheques',              [MpesaController::class, 'cheques']);
+    Route::patch('mpesa/cheques/{id}/clear', [MpesaController::class, 'clearCheque']);
+    Route::patch('mpesa/cheques/{id}/bounce',[MpesaController::class, 'bounceCheque']);
+
+    // ── Phase 5C: End-of-Term Clearance ────────────────────────────────────────
+    Route::get('clearance',                       [ClearanceController::class, 'index']);
+    Route::post('clearance/initialize',           [ClearanceController::class, 'initialize']);
+    Route::get('clearance/{id}',                  [ClearanceController::class, 'show']);
+    Route::patch('clearance/{id}/fee',            [ClearanceController::class, 'signOffFee']);
+    Route::patch('clearance/{id}/library',        [ClearanceController::class, 'signOffLibrary']);
+    Route::patch('clearance/{id}/dorm',           [ClearanceController::class, 'signOffDorm']);
+    Route::post('clearance/{id}/exam-card',       [ClearanceController::class, 'issueExamCard']);
+    Route::patch('clearance/{id}/sign-off',       [ClearanceController::class, 'signOff']);
+
+    // ── Phase 6: QuickBooks / CSV Integration ────────────────────────
+    Route::get('quickbooks/status',     [QuickBooksController::class, 'status']);
+    Route::get('quickbooks/auth-url',   [QuickBooksController::class, 'authUrl']);
+    Route::delete('quickbooks/disconnect', [QuickBooksController::class, 'disconnect']);
+    Route::post('quickbooks/sync',      [QuickBooksController::class, 'sync']);
+    Route::get('quickbooks/sync-log',   [QuickBooksController::class, 'syncLog']);
+    // CSV export (any financial type)
+    Route::get('export/{type}',         [QuickBooksController::class, 'exportCsv']);
+});
+
+// ── Safaricom M-Pesa IPN Callbacks (no auth — public endpoints) ──────────────
+Route::post('mpesa/c2b/validation',  [MpesaController::class, 'c2bValidate']);
+Route::post('mpesa/c2b/confirmation',[MpesaController::class, 'c2bConfirm']);
+Route::post('mpesa/stk/callback',    [MpesaController::class, 'stkCallback']);
+
+// ── QuickBooks OAuth2 callback (no auth — QBO redirects here) ────────────────
+Route::get('finance/quickbooks/callback', [QuickBooksController::class, 'callback']);
+
+
+// ── Finance Reports (authenticated, finance prefix group) ─────────────────────
+Route::group([
+    'prefix'     => 'finance/reports',
+    'middleware' => ['auth:sanctum', 'tenant.active'],
+], function () {
+    Route::get('daily-collection',        [FinanceReportController::class, 'dailyCollection']);
+    Route::get('receipts-register',       [FinanceReportController::class, 'receiptsRegister']);
+    Route::get('outstanding-balances',    [FinanceReportController::class, 'outstandingBalances']);
+    Route::get('defaulters',              [FinanceReportController::class, 'defaulters']);
+    Route::get('collection-summary',      [FinanceReportController::class, 'collectionSummary']);
+    Route::get('income-statement',        [FinanceReportController::class, 'incomeStatement']);
+    Route::get('budget-vs-actual',        [FinanceReportController::class, 'budgetVsActual']);
+    Route::get('bank-reconciliation',     [FinanceReportController::class, 'bankReconciliation']);
+    Route::get('petty-cash',              [FinanceReportController::class, 'pettyCash']);
+    Route::get('mpesa-transactions',      [FinanceReportController::class, 'mpesaTransactions']);
+    Route::get('expense-ledger',          [FinanceReportController::class, 'expenseLedger']);
+    Route::get('student-statement/{id}',  [FinanceReportController::class, 'studentStatement']);
+    Route::get('arrears-ageing',          [FinanceReportController::class, 'arrearsAgeing']);
+    Route::get('annual-summary',          [FinanceReportController::class, 'annualSummary']);
+    Route::get('{type}/export',           [FinanceReportController::class, 'export']);
+    Route::get('{type}/pdf',              [FinanceReportController::class, 'pdf']);
 });

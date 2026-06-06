@@ -1,87 +1,74 @@
 import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from './Loader';
 
-const TYPE_COLORS = {
-    Academic:  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    General:   'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-    Event:     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    Finance:   'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-    Health:    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    Transport: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+const TYPE_BADGE = {
+    Academic:  'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    General:   'bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300',
+    Event:     'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    Finance:   'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+    Health:    'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+    Transport: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
 };
 
 const PostNoticeModal = ({ onClose, onSaved }) => {
-    const [form, setForm] = useState({ title: '', content: '', type: 'General', published_at: '' });
+    const [form, setForm]   = useState({ title: '', content: '', type: 'General', published_at: '' });
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError]   = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
-        setError(null);
+        setSaving(true); setError(null);
         try {
             await window.axios.post('/api/notices', form);
-            onSaved();
-            onClose();
+            onSaved(); onClose();
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to post notice.');
-        } finally {
-            setSaving(false);
-        }
+        } finally { setSaving(false); }
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-base font-bold text-gray-800 dark:text-white">Post New Notice</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg border border-slate-200 dark:border-gray-700">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg">
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Post New Notice</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none transition-colors">&times;</button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+                <form onSubmit={handleSubmit} className="p-5 space-y-4">
+                    {error && <p className="text-xs text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">{error}</p>}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Title</label>
-                        <input
-                            required
-                            value={form.title}
-                            onChange={e => setForm({ ...form, title: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                            placeholder="Notice title..."
-                        />
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Title *</label>
+                        <input required value={form.title} onChange={e => setForm({...form, title: e.target.value})}
+                            placeholder="Notice title…" className={inputCls}/>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Category</label>
+                            <select value={form.type} onChange={e => setForm({...form, type: e.target.value})} className={inputCls}>
+                                {Object.keys(TYPE_BADGE).map(t => <option key={t}>{t}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Publish Date</label>
+                            <input type="date" value={form.published_at}
+                                onChange={e => setForm({...form, published_at: e.target.value})} className={inputCls}/>
+                        </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Category</label>
-                        <select
-                            value={form.type}
-                            onChange={e => setForm({ ...form, type: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        >
-                            {Object.keys(TYPE_COLORS).map(t => <option key={t}>{t}</option>)}
-                        </select>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Content *</label>
+                        <textarea required rows={4} value={form.content}
+                            onChange={e => setForm({...form, content: e.target.value})}
+                            placeholder="Notice content…" className={inputCls + ' resize-none'}/>
                     </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Content</label>
-                        <textarea
-                            required
-                            rows={4}
-                            value={form.content}
-                            onChange={e => setForm({ ...form, content: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-                            placeholder="Notice content..."
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Publish Date</label>
-                        <input
-                            type="date"
-                            value={form.published_at}
-                            onChange={e => setForm({ ...form, published_at: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
-                        <button type="submit" disabled={saving} className="px-5 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-60">
-                            {saving ? 'Posting...' : 'Post Notice'}
+                    <div className="flex gap-2 pt-1">
+                        <button type="submit" disabled={saving}
+                            className="flex-1 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {saving ? 'Posting…' : 'Post Notice'}
+                        </button>
+                        <button type="button" onClick={onClose}
+                            className="flex-1 py-2 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancel
                         </button>
                     </div>
                 </form>
@@ -101,11 +88,8 @@ const NoticeBoard = () => {
         try {
             const res = await window.axios.get('/api/notices');
             setNotices(res.data);
-        } catch {
-            // silently fail — notices just won't load
-        } finally {
-            setLoading(false);
-        }
+        } catch { /* silent */ }
+        finally { setLoading(false); }
     };
 
     useEffect(() => { fetchNotices(); }, []);
@@ -116,108 +100,104 @@ const NoticeBoard = () => {
             await window.axios.delete(`/api/notices/${id}`);
             setNotices(prev => prev.filter(n => n.id !== id));
             window.showToast?.('success', 'Notice deleted.');
-        } catch {
-            window.showToast?.('error', 'Could not delete notice.');
-        }
+        } catch { window.showToast?.('error', 'Could not delete notice.'); }
     };
 
     return (
-        <div className="space-y-6">
-            {showModal && (
-                <PostNoticeModal
-                    onClose={() => setShowModal(false)}
-                    onSaved={fetchNotices}
-                />
-            )}
+        <div className="flex flex-col space-y-3 h-full pb-6">
+            {showModal && <PostNoticeModal onClose={() => setShowModal(false)} onSaved={fetchNotices}/>}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Notice Board</h2>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">School-wide announcements and updates</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Dashboard <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Notice Board</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Notice Board
+                        {!loading && <span className="ml-2 text-xs font-normal text-slate-400">— {notices.length} notices</span>}
+                    </h1>
                 </div>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 text-sm"
-                >
+                <button onClick={() => setShowModal(true)}
+                    className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
                     + Post New Notice
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {loading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <svg className="animate-spin w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    </div>
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
                 ) : notices.length === 0 ? (
-                    <div className="text-center py-20">
-                        <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        <p className="text-sm text-gray-400">No notices posted yet.</p>
+                    <div className="flex-1 flex flex-col items-center justify-center py-16">
+                        <p className="text-slate-400 text-sm mb-4">No notices posted yet.</p>
+                        <button onClick={() => setShowModal(true)}
+                            className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-md hover:bg-primary/90 transition-all duration-200">
+                            + Post First Notice
+                        </button>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-600">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Announcement</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Category</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Posted By</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-right">Date</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                                {notices.map((notice) => (
-                                    <React.Fragment key={notice.id}>
-                                        <tr className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                                            <td className="px-6 py-5 max-w-xs">
-                                                <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">{notice.title}</h3>
-                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 line-clamp-1">{notice.content}</p>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${TYPE_COLORS[notice.type] || TYPE_COLORS.General}`}>
-                                                    {notice.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{notice.author}</span>
-                                            </td>
-                                            <td className="px-6 py-5 text-right">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{notice.published_at}</span>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center justify-end gap-3">
-                                                    <button
-                                                        onClick={() => setExpanded(expanded === notice.id ? null : notice.id)}
-                                                        className="text-primary font-bold text-[10px] uppercase hover:underline"
-                                                    >
-                                                        {expanded === notice.id ? 'Hide' : 'View'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(notice.id)}
-                                                        className="text-red-400 font-bold text-[10px] uppercase hover:underline"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {expanded === notice.id && (
-                                            <tr className="bg-gray-50/50 dark:bg-gray-700/20">
-                                                <td colSpan={5} className="px-6 py-4">
-                                                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{notice.content}</p>
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 680 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Announcement</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Category</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-36">Posted By</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Date</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {notices.map((notice, i) => (
+                                        <React.Fragment key={notice.id}>
+                                            <tr className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors cursor-default ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                                <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                                <td className="px-3 py-2 max-w-xs">
+                                                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-tight">{notice.title}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5 truncate">{notice.content}</p>
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${TYPE_BADGE[notice.type] || TYPE_BADGE.General}`}>
+                                                        {notice.type}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{notice.author}</td>
+                                                <td className="px-3 py-2 text-right text-[10px] font-mono text-slate-400 whitespace-nowrap">{notice.published_at}</td>
+                                                <td className="px-3 py-2 text-right">
+                                                    <div className="flex items-center justify-end gap-3">
+                                                        <button onClick={() => setExpanded(expanded === notice.id ? null : notice.id)}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                            {expanded === notice.id ? 'Hide' : 'View'}
+                                                        </button>
+                                                        <button onClick={() => handleDelete(notice.id)}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition-colors">
+                                                            Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        )}
-                                    </React.Fragment>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            {expanded === notice.id && (
+                                                <tr className="bg-slate-50/50 dark:bg-gray-700/20 border-b border-slate-100 dark:border-gray-700/60">
+                                                    <td colSpan={6} className="px-3 py-3">
+                                                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{notice.content}</p>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{notices.length} notices</p>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

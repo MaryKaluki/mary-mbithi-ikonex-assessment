@@ -64,4 +64,27 @@ class DormController extends Controller
 
         return response()->json($allocation, 201);
     }
+
+    /**
+     * PATCH /api/admin/dorms/{id}/fee  (Phase 5A)
+     * Sets the default fee_per_term on the dormitory.
+     * Body: { fee_per_term: integer (KES) }
+     */
+    public function updateDormFee(Request $request, $id)
+    {
+        $schoolId = $request->user()->school_id;
+        $dorm = Dormitory::where('id', $id)
+            ->where('school_id', $schoolId)->firstOrFail();
+
+        $data = $request->validate([
+            'fee_per_term' => 'required|integer|min:0',
+        ]);
+
+        $dorm->update(['fee_per_term' => $data['fee_per_term']]);
+
+        return response()->json([
+            'message'      => 'Dorm fee updated.',
+            'fee_per_term' => $dorm->fee_per_term,
+        ]);
+    }
 }

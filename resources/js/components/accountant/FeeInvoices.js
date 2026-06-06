@@ -1,123 +1,300 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
 
-const FeeInvoices = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('All');
+const inputCls = "px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+const inputClsW = "w-full " + inputCls;
 
-    // Mock Data
-    const invoices = [
-        { id: 'INV-2024-001', student: 'Alice Walker', admission: 'ST-001', term: 'Term 1 2024', amount: 'KSh 45,000', paid: 'KSh 45,000', balance: 'KSh 0', status: 'Paid', date: '2024-01-05' },
-        { id: 'INV-2024-002', student: 'Bob Smith', admission: 'ST-002', term: 'Term 1 2024', amount: 'KSh 45,000', paid: 'KSh 20,000', balance: 'KSh 25,000', status: 'Partial', date: '2024-01-06' },
-        { id: 'INV-2024-003', student: 'Charlie Brown', admission: 'ST-003', term: 'Term 1 2024', amount: 'KSh 45,000', paid: 'KSh 0', balance: 'KSh 45,000', status: 'Unpaid', date: '2024-01-07' },
-        { id: 'INV-2024-004', student: 'Diana Prince', admission: 'ST-004', term: 'Term 1 2024', amount: 'KSh 45,000', paid: 'KSh 45,000', balance: 'KSh 0', status: 'Paid', date: '2024-01-05' },
-        { id: 'INV-2024-005', student: 'Evan Wright', admission: 'ST-005', term: 'Term 1 2024', amount: 'KSh 45,000', paid: 'KSh 10,000', balance: 'KSh 35,000', status: 'Partial', date: '2024-01-08' },
-    ];
+const STATUS_BADGE = {
+    draft:     'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
+    issued:    'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    partial:   'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    paid:      'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    overpaid:  'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+    cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-400',
+};
 
-    const filteredInvoices = invoices.filter(inv => {
-        const matchesSearch = inv.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            inv.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            inv.admission.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All' || inv.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+const GenerateModal = ({ onClose, onSaved }) => {
+    const [mode, setMode]   = useState('single');  // 'single' | 'bulk'
+    const [form, setForm]   = useState({ student_id: '', grade_level: '', term: '', academic_year: new Date().getFullYear().toString() });
+    const [saving, setSaving] = useState(false);
+    const [error, setError]   = useState(null);
+    const [result, setResult] = useState(null);
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Paid': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
-            case 'Partial': return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
-            case 'Unpaid': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
-            default: return 'bg-gray-100 text-gray-600';
-        }
+    const setField = (f, v) => setForm(p => ({ ...p, [f]: v }));
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true); setError(null); setResult(null);
+        try {
+            if (mode === 'single') {
+                await window.axios.post('/api/finance/invoices', {
+                    student_id:    parseInt(form.student_id),
+                    term:          parseInt(form.term),
+                    academic_year: form.academic_year,
+                });
+                window.showToast?.('success', 'Invoice generated.');
+                onSaved(); onClose();
+            } else {
+                const res = await window.axios.post('/api/finance/invoices/bulk-issue', {
+                    grade_level:   form.grade_level,
+                    term:          parseInt(form.term),
+                    academic_year: form.academic_year,
+                });
+                setResult(res.data);
+                onSaved();
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to generate invoice.');
+        } finally { setSaving(false); }
     };
 
     return (
-        <div className="space-y-6 pb-20">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-slate-200 dark:border-gray-700 w-full max-w-md">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg">
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Generate Invoice</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-5 space-y-4">
+                    {error && <p className="text-xs text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">{error}</p>}
+                    {result && (
+                        <div className="text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-md text-emerald-700 dark:text-emerald-300">
+                            Issued: {result.issued} · Skipped: {result.skipped} · Errors: {result.errors?.length || 0}
+                        </div>
+                    )}
+
+                    {/* Mode toggle */}
+                    <div className="flex border border-slate-200 dark:border-gray-700 rounded-md overflow-hidden">
+                        {[['single', 'Single Student'], ['bulk', 'Entire Grade']].map(([v, label]) => (
+                            <button key={v} type="button" onClick={() => setMode(v)}
+                                className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                                    mode === v ? 'bg-slate-800 text-white' : 'bg-white dark:bg-gray-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-gray-600'
+                                }`}>
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {mode === 'single' ? (
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Student ID *</label>
+                            <input required type="number" value={form.student_id} onChange={e => setField('student_id', e.target.value)}
+                                placeholder="Student database ID" className={inputClsW}/>
+                            <p className="text-[10px] text-slate-400 mt-0.5">Use the student's numeric ID from the students table.</p>
+                        </div>
+                    ) : (
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Grade Level *</label>
+                            <input required value={form.grade_level} onChange={e => setField('grade_level', e.target.value)}
+                                placeholder="e.g. Form 1, Grade 4" className={inputClsW}/>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Term *</label>
+                            <select required value={form.term} onChange={e => setField('term', e.target.value)} className={inputClsW}>
+                                <option value="">Select…</option>
+                                <option value="1">Term 1</option>
+                                <option value="2">Term 2</option>
+                                <option value="3">Term 3</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Year *</label>
+                            <input required value={form.academic_year} onChange={e => setField('academic_year', e.target.value)}
+                                placeholder="2026" className={inputClsW}/>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                        <button type="submit" disabled={saving}
+                            className="flex-1 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {saving ? 'Generating…' : 'Generate'}
+                        </button>
+                        <button type="button" onClick={onClose}
+                            className="flex-1 py-2 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                            {result ? 'Close' : 'Cancel'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const FeeInvoices = () => {
+    const [invoices, setInvoices]       = useState([]);
+    const [meta, setMeta]               = useState({ total: 0 });
+    const [loading, setLoading]         = useState(true);
+    const [search, setSearch]           = useState('');
+    const [statusFilter, setStatus]     = useState('');
+    const [term, setTerm]               = useState('');
+    const [year, setYear]               = useState(new Date().getFullYear().toString());
+    const [showModal, setShowModal]     = useState(false);
+
+    const fetchInvoices = async (page = 1) => {
+        setLoading(true);
+        try {
+            const params = { page, per_page: 50 };
+            if (search)       params.search = search;
+            if (statusFilter) params.status = statusFilter;
+            if (term)         params.term   = term;
+            if (year)         params.academic_year = year;
+            const res = await window.axios.get('/api/finance/invoices', { params });
+            setInvoices(res.data.data);
+            setMeta(res.data);
+        } catch { /* silent */ }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { fetchInvoices(); }, []);
+
+    const handleCancel = async (id) => {
+        if (!window.confirm('Cancel this invoice?')) return;
+        try {
+            await window.axios.patch(`/api/finance/invoices/${id}/cancel`, { reason: 'Cancelled by accountant' });
+            setInvoices(p => p.map(inv => inv.id === id ? { ...inv, status: 'cancelled' } : inv));
+            window.showToast?.('success', 'Invoice cancelled.');
+        } catch (err) {
+            window.showToast?.('error', err.response?.data?.message || 'Could not cancel.');
+        }
+    };
+
+    const totalBalance = invoices.reduce((a, inv) => a + Number(inv.balance), 0);
+
+    return (
+        <div className="flex flex-col space-y-3 h-full pb-6">
+            {showModal && <GenerateModal onClose={() => setShowModal(false)} onSaved={() => fetchInvoices()}/>}
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Fee Invoices</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage student invoices and track payments.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Finance <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Fee Invoices</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Fee Invoices</h1>
                 </div>
-                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
-                        Export Report
-                    </button>
-                    <button className="px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors shadow-lg hover:-translate-y-0.5 transform">
-                        + Generate Invoice
-                    </button>
-                </div>
+                <button onClick={() => setShowModal(true)}
+                    className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                    + Generate Invoice
+                </button>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex-1 relative">
-                    <input
-                        type="text"
-                        placeholder="Search Student Name, Admission or Invoice #..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            {/* Filter bar */}
+            <div className="flex flex-wrap gap-2 items-end flex-shrink-0">
+                <div className="flex-1 min-w-40">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Search</label>
+                    <input value={search} onChange={e => setSearch(e.target.value)}
+                        placeholder="Student, adm no, invoice #…" className={inputCls + ' w-full'}/>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <select
-                        className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="All">All Status</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Partial">Partial</option>
-                        <option value="Unpaid">Unpaid</option>
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Status</label>
+                    <select value={statusFilter} onChange={e => setStatus(e.target.value)} className={inputCls}>
+                        <option value="">All</option>
+                        {Object.keys(STATUS_BADGE).map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                     </select>
-                    <input type="date" className="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
                 </div>
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Term</label>
+                    <select value={term} onChange={e => setTerm(e.target.value)} className={inputCls}>
+                        <option value="">All</option>
+                        <option value="1">Term 1</option>
+                        <option value="2">Term 2</option>
+                        <option value="3">Term 3</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Year</label>
+                    <input value={year} onChange={e => setYear(e.target.value)} placeholder="2026" className={inputCls} style={{ width: 80 }}/>
+                </div>
+                <button onClick={() => fetchInvoices(1)}
+                    className="px-4 py-2 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                    Filter
+                </button>
             </div>
+
+            {/* Stats strip */}
+            {!loading && (
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800">
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{meta.total}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Invoices</span>
+                    </div>
+                    {totalBalance > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                            <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">KSh {totalBalance.toLocaleString()}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Outstanding (Page)</span>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left border-collapse min-w-[1000px]">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
-                            <th className="px-6 py-4">Invoice #</th>
-                            <th className="px-6 py-4">Student Details</th>
-                            <th className="px-6 py-4">Term</th>
-                            <th className="px-6 py-4">Total Amount</th>
-                            <th className="px-6 py-4">Paid</th>
-                            <th className="px-6 py-4">Balance</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {filteredInvoices.map((inv) => (
-                            <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                <td className="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">{inv.id}</td>
-                                <td className="px-6 py-4">
-                                    <div className="font-bold text-gray-800 dark:text-gray-200">{inv.student}</div>
-                                    <div className="text-xs text-gray-500">{inv.admission}</div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{inv.term}</td>
-                                <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">{inv.amount}</td>
-                                <td className="px-6 py-4 text-green-600 font-medium">{inv.paid}</td>
-                                <td className="px-6 py-4 text-red-500 font-bold">{inv.balance}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${getStatusColor(inv.status)}`}>
-                                        {inv.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                    <button className="text-gray-400 hover:text-purple-600 transition-colors" title="View Details">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    </button>
-                                    <button className="text-gray-400 hover:text-blue-600 transition-colors" title="Print Invoice">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : (
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 940 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Invoice #</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Student</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20">Adm No</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20">Term</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Total</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Paid</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Balance</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Status</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {invoices.map((inv, i) => (
+                                        <tr key={inv.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                            i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                        }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">{String(i + 1).padStart(2, '0')}</td>
+                                            <td className="px-3 py-2 text-[10px] font-mono text-slate-400">{inv.invoice_number}</td>
+                                            <td className="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100">{inv.first_name} {inv.last_name}</td>
+                                            <td className="px-3 py-2 text-[10px] font-mono text-slate-400">{inv.admission_number}</td>
+                                            <td className="px-3 py-2 text-xs text-slate-500">T{inv.term} {inv.academic_year}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-300">KSh {Number(inv.total_charged).toLocaleString()}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold font-mono text-emerald-600">KSh {Number(inv.total_paid).toLocaleString()}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold font-mono text-red-500">
+                                                {Number(inv.balance) > 0 ? `KSh ${Number(inv.balance).toLocaleString()}` : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${STATUS_BADGE[inv.status] || STATUS_BADGE.draft}`}>
+                                                    {inv.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                <div className="flex gap-2 justify-end">
+                                                    <button className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">View</button>
+                                                    {inv.status !== 'cancelled' && inv.status !== 'paid' && (
+                                                        <button onClick={() => handleCancel(inv.id)}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition-colors">Cancel</button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {invoices.length === 0 && (
+                                <div className="py-12 text-center text-xs text-slate-400 italic">No invoices match your filter.</div>
+                            )}
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{meta.total} invoice{meta.total !== 1 ? 's' : ''}</p>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

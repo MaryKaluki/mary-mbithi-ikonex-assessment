@@ -49,6 +49,27 @@ class ClassController extends Controller
         return response()->json($class, 201);
     }
 
+    public function show($id)
+    {
+        $schoolId = auth()->user()->school_id;
+        $cls = SchoolClass::where('school_id', $schoolId)
+            ->with('classTeacher')
+            ->withCount('students')
+            ->findOrFail($id);
+
+        return response()->json([
+            'id'              => $cls->id,
+            'name'            => $cls->name,
+            'level'           => $cls->level,
+            'section'         => $cls->section,
+            'curriculum_type' => $cls->curriculum_type,
+            'capacity'        => $cls->capacity,
+            'teacher_name'    => $cls->classTeacher ? $cls->classTeacher->name : 'Unassigned',
+            'class_teacher_id'=> $cls->class_teacher_id,
+            'student_count'   => $cls->students_count,
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
         $class = SchoolClass::findOrFail($id);

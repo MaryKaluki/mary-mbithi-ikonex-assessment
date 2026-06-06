@@ -34,7 +34,14 @@ class GradeController extends Controller
         $schoolId = $teacher->school_id;
 
         $classId = $request->query('class_id');
-        $subject = $request->query('subject');
+        $subjectId = $request->query('subject_id') ?? $request->query('subject');
+
+        $subject = null;
+        if (is_numeric($subjectId)) {
+            $subject = \App\Models\Subject::where('school_id', $schoolId)->find($subjectId)?->name;
+        } else {
+            $subject = $subjectId;
+        }
 
         $exam  = Exam::where('school_id', $schoolId)->findOrFail($examId);
         $class = SchoolClass::where('school_id', $schoolId)->findOrFail($classId);
@@ -60,6 +67,7 @@ class GradeController extends Controller
             'marks'            => $existing[$s->id]->marks  ?? null,
             'out_of'           => $existing[$s->id]->out_of ?? 100,
             'remarks'          => $existing[$s->id]->remarks ?? '',
+            'level'            => ($class->curriculum_type === 'CBC') ? ($existing[$s->id]->grade ?? null) : null,
             'grade'            => $existing[$s->id]->grade  ?? null,
         ]);
 
@@ -82,30 +90,56 @@ class GradeController extends Controller
         $validated = $request->validate([
             'exam_id'      => 'required|integer',
             'class_id'     => 'required|integer',
-            'subject_name' => 'required|string|max:100',
+            'subject_id'   => 'nullable|integer',
+            'subject_name' => 'nullable|string|max:100',
             'out_of'       => 'required|numeric|min:1|max:1000',
             'term'         => 'required|integer|in:1,2,3',
             'year'         => 'required|integer',
+            'curriculum_type' => 'nullable|string',
             'marks'        => 'required|array',
             'marks.*.student_id' => 'required|integer',
-            'marks.*.marks'      => 'required|numeric|min:0',
+            'marks.*.marks'      => 'nullable|numeric|min:0',
+            'marks.*.level'      => 'nullable|string|in:EE,ME,AE,BE',
             'marks.*.remarks'    => 'nullable|string|max:200',
         ]);
+
+        $subjectName = $validated['subject_name'] ?? null;
+        if (isset($validated['subject_id'])) {
+            $subjectName = \App\Models\Subject::where('school_id', $schoolId)->find($validated['subject_id'])?->name;
+        }
+
+        if (!$subjectName) {
+            return response()->json(['message' => 'Subject is required.'], 422);
+        }
+
+        $studentIds = collect($validated['marks'])->pluck('student_id')->toArray();
+        if (count($studentIds) !== count(array_unique($studentIds))) {
+            return response()->json([
+                'errors' => [
+                    'marks' => ['Duplicate student score submissions are not allowed in the same request.']
+                ],
+                'message' => 'Duplicate student score submissions are not allowed.'
+            ], 422);
+        }
 
         Exam::where('school_id', $schoolId)->findOrFail($validated['exam_id']);
 
         foreach ($validated['marks'] as $row) {
-            $grade = ExamMark::toGrade((float)$row['marks'], (float)$validated['out_of']);
+            if (($validated['curriculum_type'] ?? '') === 'CBC' || !empty($row['level'])) {
+                $grade = $row['level'] ?? 'ME';
+            } else {
+                $grade = ExamMark::toGrade((float)($row['marks'] ?? 0), (float)$validated['out_of'], $schoolId);
+            }
 
             ExamMark::updateOrCreate(
                 [
                     'school_id'    => $schoolId,
                     'student_id'   => $row['student_id'],
                     'exam_id'      => $validated['exam_id'],
-                    'subject_name' => $validated['subject_name'],
+                    'subject_name' => $subjectName,
                 ],
                 [
-                    'marks'   => $row['marks'],
+                    'marks'   => $row['marks'] ?? 0,
                     'out_of'  => $validated['out_of'],
                     'grade'   => $grade,
                     'remarks' => $row['remarks'] ?? null,

@@ -17,7 +17,7 @@ const DEPARTMENTS = [
     'Finance', 'Library', 'Transport', 'Other',
 ];
 
-const inputCls = "w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40";
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 const EditModal = ({ staff, onClose, onSaved }) => {
     const [form, setForm] = useState({
@@ -65,57 +65,57 @@ const EditModal = ({ staff, onClose, onSaved }) => {
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg border border-slate-200 dark:border-gray-700">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 rounded-t-lg">
                     <div>
-                        <h3 className="font-bold text-gray-800 dark:text-white">Edit Staff Member</h3>
-                        <p className="text-xs text-gray-400">{staff.name}</p>
+                        <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wide">Edit Staff Member</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">{staff.name}</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none transition-colors">&times;</button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Full Name</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Full Name</label>
                             <input required value={form.name} onChange={e => set('name', e.target.value)} className={inputCls}/>
-                            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                            {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
                         </div>
                         <div className="col-span-2">
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Email</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Email</label>
                             <input required type="email" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls}/>
-                            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                            {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Role</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Role</label>
                             <select value={form.role} onChange={e => set('role', e.target.value)} className={inputCls}>
                                 {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Phone</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Phone</label>
                             <input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+254 7XX…" className={inputCls}/>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Department</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Department</label>
                             <select value={form.department} onChange={e => set('department', e.target.value)} className={inputCls}>
                                 <option value="">— Select —</option>
                                 {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Join Date</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Join Date</label>
                             <input type="date" value={form.join_date} onChange={e => set('join_date', e.target.value)} className={inputCls}/>
                         </div>
                         <div className="col-span-2">
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">
-                                New Password <span className="text-gray-300 font-normal">(leave blank to keep current)</span>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                                New Password <span className="text-slate-400 font-normal normal-case">(leave blank to keep current)</span>
                             </label>
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={form.password}
                                     onChange={e => set('password', e.target.value)}
                                     placeholder="Minimum 8 characters" className={inputCls + ' pr-10'}/>
                                 <button type="button" onClick={() => setShowPass(p => !p)}
-                                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={showPass
                                             ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
@@ -124,13 +124,16 @@ const EditModal = ({ staff, onClose, onSaved }) => {
                                     </svg>
                                 </button>
                             </div>
-                            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
+                            {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
                         </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-500">Cancel</button>
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-gray-700">
+                        <button type="button" onClick={onClose}
+                            className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
+                            Cancel
+                        </button>
                         <button type="submit" disabled={saving}
-                            className="px-6 py-2 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-60">
+                            className="px-5 py-2 bg-blue-700 text-white font-bold text-sm rounded-md hover:bg-blue-800 disabled:opacity-60 transition-all duration-200">
                             {saving ? 'Saving…' : 'Save Changes'}
                         </button>
                     </div>
@@ -142,11 +145,11 @@ const EditModal = ({ staff, onClose, onSaved }) => {
 
 const StaffList = () => {
     const navigate = useNavigate();
-    const [searchTerm, setSearchTerm]   = useState('');
-    const [filterRole, setFilterRole]   = useState('All');
-    const [staff, setStaff]             = useState([]);
-    const [isLoading, setIsLoading]     = useState(true);
-    const [editTarget, setEditTarget]   = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterRole, setFilterRole] = useState('All');
+    const [staff, setStaff]           = useState([]);
+    const [isLoading, setIsLoading]   = useState(true);
+    const [editTarget, setEditTarget] = useState(null);
 
     const fetchStaff = async () => {
         setIsLoading(true);
@@ -163,7 +166,8 @@ const StaffList = () => {
     useEffect(() => { fetchStaff(); }, []);
 
     const filteredStaff = staff.filter(member => {
-        const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch =
+            member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             member.email.toLowerCase().includes(searchTerm.toLowerCase());
         const displayRole = member.role.replace('_', ' ').toLowerCase();
         const matchesFilter = filterRole === 'All' || displayRole === filterRole.toLowerCase();
@@ -171,90 +175,130 @@ const StaffList = () => {
     });
 
     return (
-        <div className="space-y-6 pb-20">
+        <div className="space-y-4 pb-20">
             {editTarget && (
                 <EditModal staff={editTarget} onClose={() => setEditTarget(null)} onSaved={fetchStaff}/>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Staff Management</h2>
-                <button onClick={() => navigate('/admin/users/staff/create')}
-                    className="px-4 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 shadow-lg shadow-primary/20 text-sm w-full sm:w-auto text-center">
-                    + Add New Staff
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <nav className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">
+                        <span>Admin</span>
+                        <span className="mx-1.5">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-medium">Staff Management</span>
+                    </nav>
+                    <h1 className="text-lg font-bold text-slate-800 dark:text-gray-100">Staff Management</h1>
+                </div>
+                <button
+                    onClick={() => navigate('/admin/users/staff/create')}
+                    className="px-4 py-2 bg-primary text-white font-bold rounded-md hover:bg-primary/90 text-sm transition-all duration-200 flex items-center gap-1.5 shadow-sm"
+                >
+                    <span className="text-base leading-none">+</span> Add Staff
                 </button>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white dark:bg-zinc-800 p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col sm:flex-row gap-3">
+            {/* Search + Filter Bar */}
+            <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 relative">
-                    <input type="text" placeholder="Search by Name or Email…"
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 dark:bg-zinc-900 dark:text-gray-200 dark:placeholder-gray-500"
-                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-                    <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
+                    <input
+                        type="text"
+                        placeholder="Search by name or email…"
+                        className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-                <select className="px-3 py-2 text-sm border border-gray-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-zinc-900 dark:text-gray-200 w-full sm:w-auto"
-                    value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+                <select
+                    className="px-3 py-2 text-sm border border-slate-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-gray-200 w-full sm:w-44"
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value)}
+                >
                     <option value="All">All Roles</option>
                     {ROLES.map(r => <option key={r.value} value={r.label}>{r.label}</option>)}
                 </select>
+                {!isLoading && (
+                    <div className="flex items-center px-3 py-2 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap select-none">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 mr-1">{filteredStaff.length}</span> records
+                    </div>
+                )}
             </div>
 
-            {/* Table */}
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700 overflow-hidden">
+            {/* Data Table */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 {isLoading ? (
                     <div className="p-6"><SkeletonLoader type="table" /></div>
                 ) : filteredStaff.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500 font-bold dark:text-gray-400">
-                        No staff members found.
+                    <div className="py-16 text-center">
+                        <p className="text-slate-400 dark:text-gray-500 text-sm mb-4">
+                            {searchTerm || filterRole !== 'All'
+                                ? 'No staff match your filters.'
+                                : 'No staff members have been added yet.'}
+                        </p>
+                        <button
+                            onClick={() => navigate('/admin/users/staff/create')}
+                            className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-md hover:bg-primary/90 transition-all duration-200"
+                        >
+                            + Add First Staff Member
+                        </button>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[700px]">
-                            <thead className="bg-gray-50 dark:bg-zinc-900/50 border-b border-gray-200 dark:border-zinc-700">
+                        <table className="w-full text-left min-w-[750px]">
+                            <thead className="bg-slate-100 dark:bg-gray-900/50 border-b border-slate-200 dark:border-gray-700">
                                 <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Employee</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Role</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Department</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Contact</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-right">Actions</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Employee</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Role</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Department</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Contact</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Joined</th>
+                                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-zinc-700/50">
+                            <tbody>
                                 {filteredStaff.map((member) => (
-                                    <tr key={member.id} className="hover:bg-primary/5 dark:hover:bg-zinc-700/50 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-sm bg-primary/10 text-primary flex-shrink-0">
+                                    <tr key={member.id} className="border-b border-slate-200 dark:border-gray-700 hover:bg-blue-50/50 dark:hover:bg-gray-700/40 transition-colors group">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs bg-primary/10 text-primary flex-shrink-0">
                                                     {member.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-gray-800 dark:text-gray-200">{member.name}</p>
-                                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">{member.pin ? 'PIN Active' : 'No PIN'}</p>
+                                                    <p className="font-semibold text-sm text-slate-800 dark:text-gray-200 leading-tight">{member.name}</p>
+                                                    <p className="text-[10px] text-slate-400 uppercase tracking-widest">{member.pin ? 'PIN Active' : 'No PIN'}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 text-gray-600">
+                                        <td className="px-4 py-3">
+                                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-slate-100 dark:bg-gray-700 dark:text-gray-300 text-slate-600">
                                                 {member.role.replace('_', ' ')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {member.department || <span className="text-gray-300 dark:text-gray-600 italic text-xs">—</span>}
+                                        <td className="px-4 py-3 text-sm text-slate-500 dark:text-gray-400">
+                                            {member.department || <span className="text-slate-300 dark:text-gray-600">—</span>}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-xs text-gray-600 dark:text-gray-400">{member.email}</p>
-                                            {member.phone && <p className="text-xs text-gray-400">{member.phone}</p>}
+                                        <td className="px-4 py-3">
+                                            <p className="text-xs text-slate-600 dark:text-gray-400">{member.email}</p>
+                                            {member.phone && <p className="text-xs text-slate-400 mt-0.5">{member.phone}</p>}
                                         </td>
-                                        <td className="px-6 py-4 text-right">
+                                        <td className="px-4 py-3 text-xs text-slate-500 dark:text-gray-400">
+                                            {member.join_date || <span className="text-slate-300 dark:text-gray-600">—</span>}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
                                             <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={(e) => { e.stopPropagation(); navigate(`/hr/staff/${member.id}/documents`); }}
-                                                    className="text-purple-600 font-bold text-sm hover:underline dark:text-purple-400">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/hr/staff/${member.id}/documents`); }}
+                                                    className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                                                >
                                                     Docs
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); setEditTarget(member); }}
-                                                    className="text-primary font-bold text-sm hover:underline">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setEditTarget(member); }}
+                                                    className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                                                >
                                                     Edit
                                                 </button>
                                             </div>

@@ -30,4 +30,18 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | QuickBooks Online OAuth2 (Phase 6)
+    |--------------------------------------------------------------------------
+    | QBO_CLIENT_ID, QBO_CLIENT_SECRET, QBO_REDIRECT_URI must be set in .env.
+    | QBO_ENVIRONMENT: 'sandbox' for testing, 'production' for live.
+    */
+    'qbo' => [
+        'client_id'     => env('QBO_CLIENT_ID'),
+        'client_secret' => env('QBO_CLIENT_SECRET'),
+        'redirect_uri'  => env('QBO_REDIRECT_URI', env('APP_URL') . '/api/finance/quickbooks/callback'),
+        'environment'   => env('QBO_ENVIRONMENT', 'sandbox'),
+    ],
+
 ];

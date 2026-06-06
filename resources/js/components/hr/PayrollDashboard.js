@@ -1,111 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import StatsCard from '../StatsCard';
 
 const PayrollDashboard = () => {
-    const [stats, setStats]         = useState(null);
+    const [stats, setStats]           = useState(null);
     const [recentRuns, setRecentRuns] = useState([]);
-    const [loading, setLoading]     = useState(true);
-    const [error, setError]         = useState('');
+    const [loading, setLoading]       = useState(true);
+    const [error, setError]           = useState('');
 
     useEffect(() => {
         setLoading(true);
         setError('');
         window.axios.get('/api/hr/payroll/dashboard')
-            .then(res => {
-                setStats(res.data.stats);
-                setRecentRuns(res.data.recent_runs);
-            })
+            .then(res => { setStats(res.data.stats); setRecentRuns(res.data.recent_runs); })
             .catch(() => setError('Failed to load payroll data.'))
             .finally(() => setLoading(false));
     }, []);
 
     const fmt = val => `KES ${Number(val || 0).toLocaleString()}`;
 
-    const iconCls = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+    const runStatusBadge = (status) => {
+        if (status === 'Paid')      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+        if (status === 'Processed') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        return 'bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300';
+    };
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Payroll Dashboard</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Overview of salary disbursements.</p>
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        HR <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Payroll</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Payroll Dashboard</h1>
+                </div>
             </div>
 
-            {error && (
-                <div className="p-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-700 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
-                    {error}
-                </div>
-            )}
+            {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md flex-shrink-0">{error}</p>}
 
             {loading ? (
-                <div className="text-center py-12 text-sm text-gray-500 dark:text-gray-400">Loading payroll data...</div>
+                <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading payroll data…</div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatsCard
-                            title={`Total Payroll (${stats?.month || ''})`}
-                            value={fmt(stats?.gross)}
-                            percentage="Gross"
-                            trend="up"
-                            colorClass={iconCls}
-                            progressColor="bg-gray-400"
-                            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                        />
-                        <StatsCard
-                            title="Deductions"
-                            value={fmt(stats?.deductions)}
-                            percentage="Tax & Benefits"
-                            trend="neutral"
-                            colorClass={iconCls}
-                            progressColor="bg-gray-400"
-                            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>}
-                        />
-                        <StatsCard
-                            title="Net Payout"
-                            value={fmt(stats?.net)}
-                            percentage="After Deductions"
-                            trend="up"
-                            colorClass={iconCls}
-                            progressColor="bg-gray-400"
-                            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-                        />
-                        <StatsCard
-                            title="Total Staff"
-                            value={stats?.total_staff ?? '—'}
-                            percentage="Active Employees"
-                            trend="neutral"
-                            colorClass={iconCls}
-                            progressColor="bg-gray-400"
-                            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-                        />
+                    {/* Stats strip */}
+                    <div className="flex gap-2 flex-shrink-0 flex-wrap">
+                        {[
+                            { label: `Gross (${stats?.month || ''})`, value: fmt(stats?.gross) },
+                            { label: 'Deductions',                    value: fmt(stats?.deductions) },
+                            { label: 'Net Payout',                   value: fmt(stats?.net) },
+                            { label: 'Total Staff',                   value: stats?.total_staff ?? '—' },
+                        ].map(card => (
+                            <div key={card.label} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md">
+                                <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">{card.value}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{card.label}</span>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Recent Payroll Runs */}
-                    <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                        <h3 className="text-base font-bold text-gray-800 mb-4 dark:text-gray-100">Recent Payroll Runs</h3>
+                    {/* Recent Payroll Runs table */}
+                    <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                        <div className="flex-shrink-0 px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Recent Payroll Runs</span>
+                        </div>
                         {recentRuns.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                                No payroll runs yet. Generate payslips from the Generate Payslips page.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {recentRuns.map((run, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-700/50">
-                                        <div>
-                                            <p className="font-bold text-sm text-gray-800 dark:text-gray-100">{run.month} Salaries</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {run.staff_count} staff &bull; {run.run_date ? run.run_date.split('T')[0] : ''}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-sm text-gray-800 dark:text-gray-100">{fmt(run.net)}</p>
-                                            <span className="text-xs px-2 py-0.5 border border-gray-300 text-gray-600 rounded dark:border-gray-600 dark:text-gray-300">
-                                                {run.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="flex-1 flex items-center justify-center">
+                                <p className="text-slate-400 text-sm">No payroll runs yet. Generate payslips from the Generate page.</p>
                             </div>
+                        ) : (
+                            <>
+                                <div className="overflow-auto flex-1">
+                                    <table className="w-full text-left border-collapse" style={{ minWidth: 540 }}>
+                                        <thead className="sticky top-0 z-10">
+                                            <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Period</th>
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Staff</th>
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Run Date</th>
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-36 text-right">Net Payout</th>
+                                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {recentRuns.map((run, i) => (
+                                                <tr key={i}
+                                                    className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                        i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                                    }`}>
+                                                    <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                        {String(i + 1).padStart(2, '00')}
+                                                    </td>
+                                                    <td className="px-3 py-2">
+                                                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{run.month} Salaries</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400">{run.staff_count}</td>
+                                                    <td className="px-3 py-2 text-xs font-mono text-slate-500 dark:text-slate-400">
+                                                        {run.run_date ? run.run_date.split('T')[0] : '—'}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-right text-sm font-bold text-slate-700 dark:text-slate-200">{fmt(run.net)}</td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${runStatusBadge(run.status)}`}>
+                                                            {run.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{recentRuns.length} recent run{recentRuns.length !== 1 ? 's' : ''}</p>
+                                </div>
+                            </>
                         )}
                     </div>
                 </>

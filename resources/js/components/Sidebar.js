@@ -2,263 +2,42 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 const MENUS = {
-    platform_admin: [
-        { header: 'Platform Overview' },
-        { to: '/', icon: 'dashboard', label: 'Platform Dashboard' },
-        { to: '/platform/schools', icon: 'school', label: 'Manage Schools' },
-        { to: '/platform/subscriptions', icon: 'credit-card', label: 'Subscriptions' },
-        { header: 'God Mode Controls' },
-        { to: '/platform/database', icon: 'database', label: 'Global DB Access' },
-        { to: '/platform/terminal', icon: 'document', label: 'System Terminal' },
-        { to: '/platform/roles', icon: 'lock', label: 'Master Roles' },
-        { to: '/platform/audit', icon: 'shield', label: 'God View Logs' },
-        { header: 'Support & Billing' },
-        { to: '/platform/invoices', icon: 'receipt', label: 'SaaS Invoices' },
-        { to: '/platform/tickets', icon: 'mail', label: 'Support Tickets' },
-    ],
     super_admin: [
-        { header: 'Main Menu' },
-        { to: '/', icon: 'dashboard', label: 'Dashboard' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
         { header: 'Administration' },
-        {
-            to: '#', icon: 'users', label: 'User Management',
-            subItems: [
-                { label: 'Administrators', to: '/admin/users/admins' },
-                { label: 'Staff & Teachers', to: '/admin/users/staff' },
-                { label: 'Students', to: '/admin/users/students' },
-                { label: 'Parents', to: '/admin/users/parents' },
-            ]
-        },
-        {
-            to: '#', icon: 'academic', label: 'Academic Ops',
-            subItems: [
-                { label: 'Admit Student', to: '/students/admit' },
-                { label: 'Classes & Sections', to: '/admin/classes' },
-                { label: 'Subjects', to: '/admin/subjects' },
-                { label: 'Timetables', to: '/admin/timetables' },
-                { label: 'Promotions', to: '/students/promotion' },
-                { label: 'Alumni Registry', to: '/students/alumni' },
-            ]
-        },
-        { to: '/admin/exams', icon: 'academic', label: 'Examination Mgmt' },
-        { header: 'Operations' },
-        { to: '/admin/transport', icon: 'truck', label: 'Transport' },
-        { to: '/admin/dorms', icon: 'home', label: 'Dormitories' },
-        { to: '/admin/events', icon: 'calendar', label: 'Event Calendar' },
-        { to: '/admin/documents', icon: 'document', label: 'Documents' },
-        { header: 'Finance & Reports' },
-        { to: '/finance/budget', icon: 'cash', label: 'Budget Planning' },
-        { to: '/reports/spc', icon: 'chart', label: 'SPC Reports', badge: 'Live' },
-        { to: '/reports/term', icon: 'report', label: 'End of Term' },
-        { header: 'God Mode System Control' },
-        { to: '/settings', icon: 'cog', label: 'Global Settings' },
-        { to: '/settings/roles', icon: 'lock', label: 'Role & Permissions' },
-        { to: '/settings/audit', icon: 'shield', label: 'System Audit Logs' },
-        { to: '/settings/data', icon: 'database', label: 'Data Center' },
-        { to: '/settings/integrations', icon: 'globe', label: 'API Integrations' },
+        { to: '/', icon: 'dashboard', label: 'Dashboard' },
+        { to: '/admin/users/students', icon: 'users', label: 'Student Directory' },
+        { to: '/students/admit', icon: 'academic', label: 'Admit Student' },
+        { to: '/admin/classes', icon: 'class', label: 'Class Streams' },
+        { to: '/admin/subjects', icon: 'book', label: 'Subjects & Learning Areas' },
+        { header: 'System Control' },
+        { to: '/settings', icon: 'cog', label: 'School Settings' },
+    ],
+    school_admin: [
+        { header: 'Administration' },
+        { to: '/', icon: 'dashboard', label: 'Dashboard' },
+        { to: '/admin/users/students', icon: 'users', label: 'Student Directory' },
+        { to: '/students/admit', icon: 'academic', label: 'Admit Student' },
+        { to: '/admin/classes', icon: 'class', label: 'Class Streams' },
+        { to: '/admin/subjects', icon: 'book', label: 'Subjects & Learning Areas' },
+        { header: 'System Control' },
+        { to: '/settings', icon: 'cog', label: 'School Settings' },
     ],
     admin: [
-        { header: 'Main Menu' },
+        { header: 'Administration' },
         { to: '/', icon: 'dashboard', label: 'Dashboard' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-        { header: 'School Management' },
-        { to: '/admin/users/students', icon: 'users', label: 'Students' },
-        { to: '/admin/users/staff', icon: 'briefcase', label: 'Staff' },
-        { to: '/admin/users/parents', icon: 'family', label: 'Parents' },
-        {
-            to: '#', icon: 'academic', label: 'Academic Ops',
-            subItems: [
-                { label: 'Admit Student', to: '/students/admit' },
-                { label: 'Classes', to: '/admin/classes' },
-                { label: 'Subjects', to: '/admin/subjects' },
-                { label: 'Timetable', to: '/admin/timetable' },
-            ]
-        },
-        { to: '/admin/transport', icon: 'bus', label: 'Transport' },
-        { to: '/admin/dormitories', icon: 'dorm', label: 'Dormitories' },
-        { to: '/admin/events', icon: 'calendar', label: 'Event Calendar' },
-        { header: 'Communication' },
-        { to: '/admin/documents', icon: 'document', label: 'Documents' },
-    ],
-    hr_manager: [
-        { header: 'HR Management' },
-        { to: '/', icon: 'dashboard', label: 'HR Dashboard' },
-        {
-            to: '#', icon: 'users', label: 'Staff Management',
-            subItems: [
-                { label: 'All Staff', to: '/hr/staff' },
-                { label: 'Add New Staff', to: '/hr/staff/create' },
-            ]
-        },
-        {
-            to: '#', icon: 'clock', label: 'Attendance',
-            subItems: [
-                { label: 'Mark Attendance', to: '/hr/attendance/mark' },
-                { label: 'Attendance History', to: '/hr/attendance/history' },
-            ]
-        },
-        { to: '/hr/leave', icon: 'calendar', label: 'Leave Requests' },
-        {
-            to: '#', icon: 'cash', label: 'Payroll System',
-            subItems: [
-                { label: 'Payroll Dashboard', to: '/hr/payroll' },
-                { label: 'Generate Payslip', to: '/hr/payroll/generate' },
-                { label: 'Payslip History', to: '/hr/payroll/history' },
-            ]
-        },
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/profile/leave', icon: 'user-clock', label: 'My Leave' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-    ],
-    accountant: [
-        { header: 'Financial Management' },
-        { to: '/', icon: 'dashboard', label: 'Financial Dashboard' },
-
-        { header: 'Fees & Invoicing' },
-        {
-            to: '#', icon: 'credit-card', label: 'Fee Operations',
-            subItems: [
-                { label: 'Invoices & History', to: '/finance/fees/invoices' },
-                { label: 'Record Payment', to: '/finance/payments/record' },
-                { label: 'Process Refunds', to: '/finance/fees/refunds' },
-                { label: 'Manage Installments', to: '/finance/fees/installments' },
-                { label: 'Outstanding Balances', to: '/finance/fees/balances' },
-            ]
-        },
-        { to: '/finance/transport', icon: 'truck', label: 'Transport Billing' },
-
-        { header: 'Transactions & Banking' },
-        {
-            to: '#', icon: 'cash', label: 'Transactions',
-            subItems: [
-                { label: 'Sync Payments', to: '/finance/transactions/sync' },
-                { label: 'Authorize Payments', to: '/finance/transactions/authorize' },
-                { label: 'Cheque Clearance', to: '/finance/transactions/cheques' },
-                { label: 'Fund Transfers', to: '/finance/transfers' },
-            ]
-        },
-        { to: '/finance/banking/reconcile', icon: 'bank', label: 'Bank Reconciliation' },
-
-        { header: 'Setup & Configuration' },
-        {
-            to: '#', icon: 'cog', label: 'Fee Setup',
-            subItems: [
-                { label: 'Fee Structures', to: '/finance/setup/fees' },
-                { label: 'Student Groups', to: '/finance/setup/groups' },
-                { label: 'Discounts', to: '/finance/setup/discounts' },
-                { label: 'Surcharges', to: '/finance/setup/surcharges' },
-                { label: 'Sponsorships', to: '/finance/setup/sponsorships' },
-            ]
-        },
-
-        { header: 'Reporting & Comms' },
-        { to: '/finance/reports', icon: 'chart', label: 'Financial Reports' },
-        {
-            to: '#', icon: 'mail', label: 'Templates',
-            subItems: [
-                { label: 'SMS Templates', to: '/finance/comms/sms' },
-                { label: 'Email Templates', to: '/finance/comms/email' },
-            ]
-        },
-        { to: '/finance/integration/quickbooks', icon: 'globe', label: 'QuickBooks Sync' },
-
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/profile/leave', icon: 'user-clock', label: 'My Leave' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
+        { to: '/admin/users/students', icon: 'users', label: 'Student Directory' },
+        { to: '/students/admit', icon: 'academic', label: 'Admit Student' },
+        { to: '/admin/classes', icon: 'class', label: 'Class Streams' },
+        { to: '/admin/subjects', icon: 'book', label: 'Subjects & Learning Areas' },
+        { header: 'System Control' },
+        { to: '/settings', icon: 'cog', label: 'School Settings' },
     ],
     teacher: [
         { header: 'Academic Management' },
         { to: '/', icon: 'dashboard', label: 'Teacher Dashboard' },
-        {
-            to: '#', icon: 'class', label: 'My Classes',
-            subItems: [
-                { label: 'View Students', to: '/teacher/students' },
-                { label: 'Class Register', to: '/teacher/classes' },
-                { label: 'Timetable', to: '/teacher/timetable' },
-            ]
-        },
-        {
-            to: '#', icon: 'clock', label: 'Attendance',
-            subItems: [
-                { label: 'Mark Attendance', to: '/teacher/attendance/mark' },
-                { label: 'Attendance History', to: '/teacher/attendance/history' },
-            ]
-        },
-        {
-            to: '#', icon: 'academic', label: 'Academics',
-            subItems: [
-                { label: 'Student Progress (SPC)', to: '/teacher/spc' },
-                { label: 'Enter Grades', to: '/teacher/grades' },
-                { label: 'Report Cards', to: '/teacher/reports' },
-            ]
-        },
-        { to: '/teacher/homework', icon: 'book', label: 'Homework / Assignments' },
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/teacher/documents', icon: 'document', label: 'Documents Hub' },
-        { to: '/profile/leave', icon: 'user-clock', label: 'My Leave' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-    ],
-    librarian: [
-        { header: 'Library Operations' },
-        { to: '/', icon: 'dashboard', label: 'Library Dashboard' },
-        { to: '/library/issue-return', icon: 'book', label: 'Issue / Return' },
-        {
-            to: '#', icon: 'library', label: 'Book Inventory',
-            subItems: [
-                { label: 'All Books', to: '/library/books' },
-                { label: 'Add New Book', to: '/library/books/create' },
-                { label: 'Categories', to: '/library/categories' },
-            ]
-        },
-        { to: '/library/students', icon: 'users', label: 'Student Accounts' },
-        { to: '/library/reports/overdue', icon: 'report', label: 'Overdue Reports' },
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/profile/leave', icon: 'user-clock', label: 'My Leave' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-    ],
-    student: [
-        { header: 'My Studies' },
-        { to: '/', icon: 'dashboard', label: 'My Dashboard' },
-        { to: '/student/pathways', icon: 'key', label: 'Pathway Selection' },
-        { to: '/student/timetable', icon: 'clock', label: 'My Timetable' },
-        { to: '/student/assessments', icon: 'chart', label: 'My Assessments' },
-        { to: '/student/portfolio', icon: 'document', label: 'Learner Portfolio' },
-        { to: '/student/subjects', icon: 'book', label: 'My Learning Areas' },
-        { to: '/student/homework', icon: 'document', label: 'Homework' },
-        { to: '/student/library', icon: 'library', label: 'Library Books' },
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-    ],
-    parent: [
-        { header: 'My Children' },
-        { to: '/', icon: 'dashboard', label: 'Parent Dashboard' },
-        { to: '/parent/children', icon: 'users', label: 'Children Profile' },
-        { to: '/parent/fees', icon: 'credit-card', label: 'Fee Payments' },
-        { to: '/parent/academic', icon: 'academic', label: 'Academic Reports' },
-        { to: '/parent/attendance', icon: 'clock', label: 'Attendance Records' },
-        { to: '/parent/engagement', icon: 'users', label: 'Parental Engagement' },
-        { to: '/parent/transport', icon: 'truck', label: 'Transport Info' },
-        { header: 'Communication' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
-        { to: '/messages', icon: 'mail', label: 'Messages' },
-    ],
-    driver: [
-        { header: 'Transport Operations' },
-        { to: '/', icon: 'dashboard', label: 'Driver Dashboard' },
-        { to: '/driver/routes', icon: 'truck', label: 'My Routes' },
-        { to: '/driver/students', icon: 'users', label: 'Student Pickup List' },
-        { to: '/driver/vehicle', icon: 'cog', label: 'Vehicle Maintenance' },
-        { header: 'General' },
-        { to: '/events', icon: 'calendar', label: 'School Events' },
-        { to: '/profile/leave', icon: 'user-clock', label: 'My Leave' },
-        { to: '/notices', icon: 'bell', label: 'Notice Board' },
+        { to: '/teacher/students', icon: 'users', label: 'View Students' },
+        { to: '/teacher/grades', icon: 'academic', label: 'Enter Grades' },
+        { to: '/teacher/reports', icon: 'report', label: 'Report Cards' },
     ]
 };
 
@@ -308,31 +87,37 @@ const SidebarItem = ({ icon, label, to, badge, subItems, onItemClick }) => {
     };
 
     return (
-        <div className="mb-1">
+        <div className="mb-0.5 px-3">
             <NavLink
                 to={hasSubItems ? '#' : to}
                 onClick={toggleSubMenu}
                 className={({ isActive }) =>
-                    `flex items-center px-6 py-3 cursor-pointer transition-colors ${isActive && !hasSubItems ? 'bg-purple-50 text-purple-600 border-r-4 border-purple-600 dark:bg-gray-700 dark:text-purple-400 dark:border-purple-500' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'}`
+                    `flex items-center px-3 py-2.5 cursor-pointer rounded-md transition-all duration-150 text-sm ${isActive && !hasSubItems
+                        ? 'bg-slate-700 text-white font-semibold'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'}`
                 }
             >
-                <div className="mr-3">{typeof icon === 'string' ? Icons[icon] : icon}</div>
-                <span className="font-medium flex-1">{label}</span>
-                {badge && <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300">{badge}</span>}
+                <div className="mr-3 flex-shrink-0">{typeof icon === 'string' ? Icons[icon] : icon}</div>
+                <span className="flex-1">{label}</span>
+                {badge && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/30 text-primary">{badge}</span>}
                 {hasSubItems && (
-                    <svg className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
                 )}
             </NavLink>
 
             {hasSubItems && isOpen && (
-                <div className="bg-gray-50 py-2 dark:bg-gray-900">
+                <div className="ml-4 mt-0.5 pl-3 border-l border-slate-700 py-1">
                     {subItems.map((item, index) => (
                         <NavLink
                             key={index}
                             to={item.to}
                             onClick={onItemClick}
                             className={({ isActive }) =>
-                                `block pl-14 pr-6 py-2 text-sm transition-colors ${isActive ? 'text-purple-600 font-medium dark:text-purple-400' : 'text-gray-500 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300'}`
+                                `block px-3 py-2 text-sm rounded-md transition-all duration-150 ${isActive
+                                    ? 'text-white font-semibold bg-slate-700'
+                                    : 'text-slate-500 hover:text-slate-100 hover:bg-slate-800'}`
                             }
                         >
                             {item.label}
@@ -348,25 +133,25 @@ const Sidebar = ({ role = 'super_admin', darkMode, isOpen, closeSidebar, onLogou
     const activeMenu = MENUS[role] || MENUS['super_admin'];
 
     return (
-        <div className={`w-64 h-screen fixed left-0 top-0 shadow-lg flex flex-col z-30 overflow-hidden transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${darkMode ? 'bg-zinc-900 border-r border-zinc-800' : 'bg-white border-r border-gray-200'}`}>
-            <div className={`h-16 flex items-center px-6 border-b flex-shrink-0 transition-colors duration-300 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+        <div className={`w-64 h-screen fixed left-0 top-0 flex flex-col z-30 overflow-hidden transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 bg-slate-900 border-r border-slate-800`}>
+            <div className="h-14 flex items-center px-4 border-b border-slate-800 flex-shrink-0">
                 {schoolLogo ? (
-                    <img src={schoolLogo} className="w-8 h-8 rounded-lg mr-3 object-cover" alt="Logo" />
+                    <img src={schoolLogo} className="w-7 h-7 rounded-md mr-3 object-cover flex-shrink-0" alt="Logo" />
                 ) : (
-                    <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center mr-3 flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                     </div>
                 )}
-                <div>
-                    <h1 className={`text-lg font-bold transition-colors truncate w-32 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{schoolName || 'Skullu 2.0'}</h1>
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{role.replace('_', ' ').toUpperCase()}</p>
+                <div className="min-w-0">
+                    <h1 className="text-sm font-bold text-white truncate">{schoolName || 'Skullu 2.0'}</h1>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">{role.replace('_', ' ')}</p>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto py-3 custom-scrollbar">
                 {activeMenu.map((item, index) => (
                     item.header ? (
-                        <div key={index} className={`mt-4 mb-2 px-6 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{item.header}</div>
+                        <div key={index} className="mt-5 mb-1 px-6 text-[10px] font-bold uppercase tracking-widest text-slate-600">{item.header}</div>
                     ) : (
                         <SidebarItem
                             key={index}
@@ -381,27 +166,33 @@ const Sidebar = ({ role = 'super_admin', darkMode, isOpen, closeSidebar, onLogou
                 ))}
 
                 {/* Logout Button */}
-                <div className="mt-4 mb-2 px-6 text-xs font-semibold uppercase tracking-wider text-red-400 border-t border-gray-100 pt-4 dark:border-gray-700">Account</div>
-                <div className="mb-1">
+                <div className="mt-5 mb-1 px-6 text-[10px] font-bold uppercase tracking-widest text-slate-600 border-t border-slate-800 pt-4">Account</div>
+                <div className="mb-1 px-3">
                     <button
                         onClick={() => {
                             if (closeSidebar) closeSidebar();
                             if (onLogout) onLogout();
                         }}
-                        className="w-full flex items-center px-6 py-3 cursor-pointer transition-colors text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                        className="w-full flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-all duration-150 text-sm text-slate-400 hover:bg-red-900/30 hover:text-red-400"
                     >
-                        <div className="mr-3">{Icons['logout']}</div>
-                        <span className="font-medium flex-1 text-left">Sign Out</span>
+                        <div className="mr-3 flex-shrink-0">{Icons['logout']}</div>
+                        <span className="flex-1 text-left">Sign Out</span>
                     </button>
                 </div>
             </div>
 
-            <div className={`p-4 border-t transition-colors duration-300 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                <div className={`flex items-center p-3 rounded-xl cursor-pointer transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                    <img src={`https://ui-avatars.com/api/?name=${role}&background=random&color=fff`} className="w-10 h-10 rounded-full" alt="User" />
-                    <div className="ml-3">
-                        <p className={`text-sm font-bold capitalize ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{role.replace('_', ' ')}</p>
-                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Active Session</p>
+            <div className="p-3 border-t border-slate-800">
+                <div className="flex flex-col space-y-2 p-2.5 rounded-lg bg-slate-800/80">
+                    <div className="flex items-center">
+                        <img src={`https://ui-avatars.com/api/?name=${role}&background=random&color=fff`} className="w-8 h-8 rounded-full flex-shrink-0" alt="User" />
+                        <div className="ml-2.5 min-w-0">
+                            <p className="text-sm font-semibold text-slate-200 capitalize truncate">{role.replace('_', ' ')}</p>
+                            <p className="text-[10px] text-slate-500">Active Session</p>
+                        </div>
+                    </div>
+                    <div className="border-t border-slate-700/60 pt-2 text-center">
+                        <p className="text-[10px] font-black tracking-widest text-primary uppercase">Mary Mbithi</p>
+                        <p className="text-[8px] text-slate-400">Assessor Mode Active</p>
                     </div>
                 </div>
             </div>

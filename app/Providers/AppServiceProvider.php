@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\Finance\ReceiptNumberService;
+use App\Services\Finance\FeeService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(ReceiptNumberService::class);
+        $this->app->singleton(FeeService::class);
     }
 
     /**

@@ -12,10 +12,17 @@ class StudentController extends Controller
     /**
      * Display a listing of the students.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // BelongsToTenant scope automatically filters by the user's school_id
-        $students = Student::orderBy('created_at', 'desc')->get();
+        $query = Student::orderBy('created_at', 'desc');
+
+        if ($request->has('grade_level') && !empty($request->grade_level)) {
+            $query->where('grade_level', $request->grade_level);
+        } elseif ($request->has('class') && !empty($request->class)) {
+            $query->where('grade_level', $request->class);
+        }
+
+        $students = $query->get();
         return response()->json(['students' => $students]);
     }
 
@@ -109,6 +116,16 @@ class StudentController extends Controller
     }
 
     /**
+     * View details of a single student.
+     */
+    public function show($id)
+    {
+        $schoolId = auth()->user()->school_id;
+        $student  = Student::where('school_id', $schoolId)->findOrFail($id);
+        return response()->json(['student' => $student]);
+    }
+
+    /**
      * Update a student's class / basic details.
      */
     public function update(Request $request, $id)
@@ -117,13 +134,49 @@ class StudentController extends Controller
         $student  = Student::where('school_id', $schoolId)->findOrFail($id);
 
         $validated = $request->validate([
-            'grade_level' => 'sometimes|string|max:100',
-            'status'      => 'sometimes|in:Active,Inactive,Graduated,Transferred',
+            // Identification
+            'first_name' => 'sometimes|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'date_of_birth' => 'sometimes|date|before:today',
+            'gender' => 'sometimes|in:Male,Female,Other',
+            'nemis_upi' => 'nullable|string|unique:students,nemis_upi,' . $id,
+            'birth_certificate_number' => 'nullable|string|unique:students,birth_certificate_number,' . $id,
+            
+            // Medical & Demographic
+            'blood_group' => 'nullable|string|max:10',
+            'religion' => 'nullable|string|max:50',
+            'nationality' => 'sometimes|string|max:100',
+            'medical_conditions' => 'nullable|string',
+            'allergies' => 'nullable|string',
+            'has_special_needs' => 'sometimes|boolean',
+            'special_needs_details' => 'nullable|string',
+            
+            // Academic & Logistics
+            'grade_level' => 'sometimes|string',
+            'house_group' => 'nullable|string|max:50',
+            'mode_of_transport' => 'sometimes|in:Walking,Private,School Bus,Public',
+            'previous_school' => 'nullable|string|max:255',
+            'residential_address' => 'nullable|string',
+            
+            // Parent/Guardian 1
+            'parent_name' => 'sometimes|string|max:255',
+            'parent_relationship' => 'sometimes|in:Father,Mother,Guardian,Other',
+            'parent_phone' => 'sometimes|string|max:50',
+            'parent_email' => 'nullable|email|max:255',
+            
+            // Parent/Guardian 2
+            'secondary_parent_name' => 'nullable|string|max:255',
+            'secondary_parent_relationship' => 'nullable|string|max:100',
+            'secondary_parent_phone' => 'nullable|string|max:50',
+            
+            // Status
+            'status' => 'sometimes|in:Active,Inactive,Graduated,Transferred',
         ]);
 
         $student->update($validated);
 
-        return response()->json(['message' => 'Student updated.', 'student' => $student]);
+        return response()->json(['message' => 'Student updated successfully.', 'student' => $student]);
     }
 
     /**

@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 
+const TABS = [
+    { id: 'Pending',  label: 'Pending' },
+    { id: 'Approved', label: 'Approved' },
+    { id: 'Rejected', label: 'Rejected' },
+];
+
+const statusBadge = (status) => {
+    if (status === 'Approved') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (status === 'Rejected') return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+};
+
 const LeaveRequests = () => {
-    const [activeTab, setActiveTab]       = useState('Pending');
-    const [requests, setRequests]         = useState([]);
-    const [loading, setLoading]           = useState(true);
-    const [error, setError]               = useState('');
+    const [activeTab, setActiveTab]         = useState('Pending');
+    const [requests, setRequests]           = useState([]);
+    const [loading, setLoading]             = useState(true);
+    const [error, setError]                 = useState('');
     const [actionLoading, setActionLoading] = useState(null);
 
     const fetchLeaves = () => {
@@ -26,130 +38,134 @@ const LeaveRequests = () => {
             .finally(() => setActionLoading(null));
     };
 
-    const tabs = [
-        { id: 'Pending',  label: 'Pending' },
-        { id: 'Approved', label: 'Approved' },
-        { id: 'Rejected', label: 'Rejected' },
-    ];
-
     const filteredRequests = requests.filter(r => r.status === activeTab);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Leave Requests</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Review and manage staff leave applications.</p>
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        HR <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Leave Requests</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Leave Requests
+                        {!loading && <span className="ml-2 text-xs font-normal text-slate-400">— {filteredRequests.length} {activeTab.toLowerCase()}</span>}
+                    </h1>
+                </div>
             </div>
 
-            {error && (
-                <div className="p-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-700 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
-                    {error}
-                </div>
-            )}
+            {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md flex-shrink-0">{error}</p>}
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
-                {tabs.map(tab => {
+            <div className="flex flex-shrink-0 border-b border-slate-200 dark:border-gray-700 gap-0.5">
+                {TABS.map(tab => {
                     const count = requests.filter(r => r.status === tab.id).length;
                     return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                            className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition-all duration-150 flex items-center gap-2 ${
                                 activeTab === tab.id
-                                    ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                            }`}
-                        >
-                            {tab.label}
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                                activeTab === tab.id
-                                    ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
                             }`}>
-                                {count}
-                            </span>
+                            {tab.label}
+                            <span className={`text-[10px] rounded px-1 py-0.5 font-bold ${
+                                activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400 dark:bg-gray-700'
+                            }`}>{count}</span>
                         </button>
                     );
                 })}
             </div>
 
-            {/* Request Cards */}
-            {loading ? (
-                <div className="text-center py-12 text-sm text-gray-500 dark:text-gray-400">Loading leave requests...</div>
-            ) : (
-                <div className="space-y-4">
-                    {filteredRequests.length === 0 ? (
-                        <div className="bg-white p-12 rounded-xl shadow-sm border border-gray-100 text-center dark:bg-gray-800 dark:border-gray-700">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">No {activeTab.toLowerCase()} leave requests.</p>
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading leave requests…</div>
+                ) : filteredRequests.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">No {activeTab.toLowerCase()} leave requests.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 680 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Staff Member</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Type</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">From</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">To</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-16 text-center">Days</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Reason</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">
+                                            {activeTab === 'Pending' ? 'Action' : 'Status'}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredRequests.map((req, i) => (
+                                        <tr key={req.id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{req.name}</span>
+                                                <span className="ml-2 text-[10px] text-slate-400">{req.role}</span>
+                                                {req.approved_by && activeTab !== 'Pending' && (
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{activeTab} by {req.approved_by}</p>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300">
+                                                    {req.type}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs font-mono text-slate-500 dark:text-slate-400">{req.start_date}</td>
+                                            <td className="px-3 py-2 text-xs font-mono text-slate-500 dark:text-slate-400">{req.end_date}</td>
+                                            <td className="px-3 py-2 text-center text-xs font-bold text-slate-600 dark:text-slate-300">{req.days || '—'}</td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 italic max-w-xs truncate">
+                                                {req.reason || '—'}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {activeTab === 'Pending' ? (
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => handleAction(req.id, 'approve')}
+                                                            disabled={actionLoading === req.id + 'approve'}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-800 disabled:opacity-50 transition-colors">
+                                                            {actionLoading === req.id + 'approve' ? '…' : 'Approve'}
+                                                        </button>
+                                                        <button onClick={() => handleAction(req.id, 'reject')}
+                                                            disabled={actionLoading === req.id + 'reject'}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 disabled:opacity-50 transition-colors">
+                                                            {actionLoading === req.id + 'reject' ? '…' : 'Reject'}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${statusBadge(req.status)}`}>
+                                                        {req.status}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    ) : filteredRequests.map(request => (
-                        <div key={request.id} className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm flex-shrink-0 dark:bg-gray-600 dark:text-gray-300">
-                                        {(request.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                                            <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100">{request.name}</h4>
-                                            <span className="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                                {request.type}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{request.role}</p>
-                                        <div className="flex flex-wrap gap-4 mt-2 text-sm">
-                                            <span className="text-gray-600 dark:text-gray-300">
-                                                <span className="font-bold">From:</span> {request.start_date}
-                                            </span>
-                                            <span className="text-gray-600 dark:text-gray-300">
-                                                <span className="font-bold">To:</span> {request.end_date}
-                                            </span>
-                                            {request.days && (
-                                                <span className="text-gray-500 dark:text-gray-400">{request.days} day(s)</span>
-                                            )}
-                                        </div>
-                                        {request.reason && (
-                                            <p className="text-sm text-gray-500 mt-2 italic dark:text-gray-400">"{request.reason}"</p>
-                                        )}
-                                        {request.approved_by && activeTab !== 'Pending' && (
-                                            <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">
-                                                {activeTab} by {request.approved_by}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {activeTab === 'Pending' && (
-                                    <div className="flex gap-2 w-full md:w-auto">
-                                        <button
-                                            onClick={() => handleAction(request.id, 'approve')}
-                                            disabled={actionLoading === request.id + 'approve'}
-                                            className="flex-1 md:flex-none px-4 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
-                                        >
-                                            {actionLoading === request.id + 'approve' ? '...' : 'Approve'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleAction(request.id, 'reject')}
-                                            disabled={actionLoading === request.id + 'reject'}
-                                            className="flex-1 md:flex-none px-4 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                        >
-                                            {actionLoading === request.id + 'reject' ? '...' : 'Reject'}
-                                        </button>
-                                    </div>
-                                )}
-
-                                {activeTab !== 'Pending' && (
-                                    <span className="px-3 py-1.5 border border-gray-300 rounded text-xs font-bold text-gray-600 dark:border-gray-600 dark:text-gray-300">
-                                        {activeTab}
-                                    </span>
-                                )}
-                            </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                {filteredRequests.length} {activeTab.toLowerCase()} request{filteredRequests.length !== 1 ? 's' : ''}
+                                {' · '}{requests.length} total
+                            </p>
                         </div>
-                    ))}
-                </div>
-            )}
+                    </>
+                )}
+            </div>
         </div>
     );
 };

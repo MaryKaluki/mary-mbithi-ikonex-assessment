@@ -51,6 +51,7 @@ import Surcharges from './accountant/Surcharges';
 import Sponsorships from './accountant/Sponsorships';
 import FinanceTemplates from './accountant/FinanceTemplates';
 import QuickBooks from './accountant/QuickBooks';
+import Clearance from './accountant/Clearance';
 
 // Teacher Modules
 import TeacherStudents from './teacher/TeacherStudents';
@@ -132,8 +133,8 @@ const Dashboard = ({ role }) => {
     console.log('Current Dashboard Role:', role);
     switch (role) {
         case 'platform_admin': return <PlatformDashboard />;
-        case 'super_admin': return <SuperAdminDashboard />;
-        case 'school_admin': return <SuperAdminDashboard />;
+        case 'super_admin': return <AdminDashboard />;
+        case 'school_admin': return <AdminDashboard />;
         case 'admin': return <AdminDashboard />;
         case 'teacher': return <TeacherDashboard />;
         case 'student': return <StudentDashboard />;
@@ -142,7 +143,7 @@ const Dashboard = ({ role }) => {
         case 'accountant': return <AccountantDashboard />;
         case 'librarian': return <LibrarianDashboard />;
         case 'driver': return <DriverDashboard />;
-        default: return <SuperAdminDashboard />;
+        default: return <AdminDashboard />;
     }
 };
 
@@ -260,6 +261,7 @@ const AppContent = ({
                         <Route path="/finance/comms/sms" element={<FinanceTemplates type="sms" />} />
                         <Route path="/finance/comms/email" element={<FinanceTemplates type="email" />} />
                         <Route path="/finance/integration/quickbooks" element={<QuickBooks />} />
+                        <Route path="/finance/clearance" element={<Clearance />} />
 
                         {/* --- Teacher --- */}
                         <Route path="/teacher/students" element={<TeacherStudents />} />

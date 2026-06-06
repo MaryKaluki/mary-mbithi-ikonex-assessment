@@ -1,104 +1,135 @@
 import React from 'react';
-import StatsCard from '../StatsCard';
+import { useNavigate } from 'react-router-dom';
 
-const LibrarianDashboard = () => (
-    <div>
-        {/* Library Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatsCard
-                title="Total Books"
-                value="12,450"
-                percentage="+150 New"
-                trend="up"
-                colorClass="bg-indigo-100 text-indigo-600"
-                progressColor="bg-indigo-500"
-                icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
-            />
-            <StatsCard
-                title="Books Issued"
-                value="485"
-                percentage="Active"
-                trend="neutral"
-                colorClass="bg-blue-100 text-blue-600"
-                progressColor="bg-blue-500"
-                icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>}
-            />
-            <StatsCard
-                title="Overdue Books"
-                value="24"
-                percentage="Need Action"
-                trend="down"
-                colorClass="bg-red-100 text-red-600"
-                progressColor="bg-red-500"
-                icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            />
-            <StatsCard
-                title="Fine Collected"
-                value="$120"
-                percentage="This Month"
-                trend="up"
-                colorClass="bg-green-100 text-green-600"
-                progressColor="bg-green-500"
-                icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-            />
-        </div>
+const today = new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Quick Issue/Return */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-gray-800 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-800 mb-6 dark:text-gray-100">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <button className="flex flex-col items-center justify-center p-6 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors border-2 border-transparent hover:border-indigo-200">
-                        <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-3">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                        </div>
-                        <span className="font-bold text-gray-700">Issue Book</span>
-                    </button>
-                    <button className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-xl hover:bg-green-100 transition-colors border-2 border-transparent hover:border-green-200">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-3">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        </div>
-                        <span className="font-bold text-gray-700">Return Book</span>
-                    </button>
-                </div>
-                <div className="mt-6">
-                    <input type="text" placeholder="Scan ISBN or Enter Book ID..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+const OVERDUE = [
+    { student: 'Alex Johnson', book: 'Physics 101',   due: '2 Days Ago', fine: 'KES 2.00', severe: true  },
+    { student: 'Maria Garcia', book: 'World History', due: 'Today',      fine: 'KES 0.00', severe: false },
+];
+
+const LibrarianDashboard = () => {
+    const navigate = useNavigate();
+
+    return (
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">Library Dashboard</nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Dashboard
+                        <span className="ml-2 text-xs font-normal text-slate-400">{today}</span>
+                    </h1>
                 </div>
             </div>
 
-            {/* Overdue List */}
-            <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-gray-800 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">Overdue Books</h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left min-w-[500px]">
-                        <thead>
-                            <tr className="text-gray-400 border-b">
-                                <th className="pb-2">Student</th>
-                                <th className="pb-2">Book Title</th>
-                                <th className="pb-2">Due Date</th>
-                                <th className="pb-2">Fine</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr className="border-b">
-                                <td className="py-3 font-medium">Alex Johnson</td>
-                                <td className="text-gray-500">Physics 101</td>
-                                <td className="text-red-500 font-bold">2 Days Ago</td>
-                                <td className="text-gray-700">$2.00</td>
-                            </tr>
-                            <tr className="border-b last:border-0">
-                                <td className="py-3 font-medium">Maria Garcia</td>
-                                <td className="text-gray-500">World History</td>
-                                <td className="text-orange-500 font-bold">Today</td>
-                                <td className="text-gray-700">$0.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            {/* Stats strip */}
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                {[
+                    { label: 'Total Books',    value: '12,450', cls: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20' },
+                    { label: 'Books Issued',   value: '485',    cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                    { label: 'Overdue Books',  value: '24',     cls: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' },
+                    { label: 'Fine Collected', value: 'KES 120',cls: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' },
+                    { label: 'Members',        value: '—',      cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                ].map(c => (
+                    <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{c.value}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Main grid */}
+            <div className="flex gap-3 flex-1 min-h-0">
+
+                {/* Overdue Books */}
+                <div className="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm flex flex-col min-h-0">
+                    <div className="flex-shrink-0 flex items-center justify-between px-4 py-2.5 bg-slate-800 dark:bg-slate-900 rounded-t-lg">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Overdue Books</span>
+                        <button onClick={() => navigate('/library/overdue')}
+                            className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                            Full Report →
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left" style={{ minWidth: 480 }}>
+                            <thead className="sticky top-0 z-10">
+                                <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Student</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Book Title</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Due Date</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Fine</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {OVERDUE.map((r, i) => (
+                                    <tr key={i} className={`border-b border-slate-100 dark:border-gray-700/60 ${
+                                        i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                    }`}>
+                                        <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                            {String(i + 1).padStart(2, '0')}
+                                        </td>
+                                        <td className="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100">{r.student}</td>
+                                        <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{r.book}</td>
+                                        <td className="px-3 py-2">
+                                            <span className={`text-xs font-bold ${r.severe ? 'text-red-500' : 'text-amber-500'}`}>{r.due}</span>
+                                        </td>
+                                        <td className="px-3 py-2 text-xs font-mono text-slate-600 dark:text-slate-400 text-right">{r.fine}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <button className="w-full mt-4 py-2 text-primary font-semibold text-sm hover:underline">View All Overdue Report</button>
+
+                {/* Quick Actions */}
+                <div className="w-56 flex-shrink-0 flex flex-col gap-3">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
+                        <div className="px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quick Actions</span>
+                        </div>
+                        <div className="p-3 grid grid-cols-1 gap-2">
+                            {[
+                                { label: 'Issue / Return Book',  path: '/library/issue-return' },
+                                { label: 'Book Inventory',       path: '/library/books' },
+                                { label: 'Members List',         path: '/library/members' },
+                                { label: 'Overdue Report',       path: '/library/overdue' },
+                                { label: 'Book Categories',      path: '/library/categories' },
+                                { label: 'Add New Book',         path: '/library/books/create' },
+                            ].map(a => (
+                                <button key={a.path} onClick={() => navigate(a.path)}
+                                    className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-left rounded-md border border-slate-200 dark:border-gray-600 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    {a.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Quick Issue/Return scanner stub */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
+                        <div className="px-4 py-2.5 bg-slate-50 dark:bg-gray-900/30 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quick Scan</span>
+                        </div>
+                        <div className="p-3">
+                            <input type="text" placeholder="ISBN or Book ID…"
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"/>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                                <button className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md border border-slate-200 dark:border-gray-600 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    Issue
+                                </button>
+                                <button className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md border border-slate-200 dark:border-gray-600 text-slate-600 dark:text-slate-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
+                                    Return
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default LibrarianDashboard;

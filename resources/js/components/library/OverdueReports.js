@@ -1,118 +1,133 @@
 import React, { useState } from 'react';
 
+const OVERDUE = [
+    { id: 1, student: 'Tommy Smith',  grade: 'Grade 4A', book: 'Physics 101',      isbn: '978-0743273565', dueDate: '2024-10-20', daysOverdue: 10, fine: 5.00  },
+    { id: 2, student: 'Alice Brown',  grade: 'Grade 5B', book: 'World History',    isbn: '978-0446310789', dueDate: '2024-10-22', daysOverdue: 8,  fine: 4.00  },
+    { id: 3, student: 'John Doe',     grade: 'Grade 6A', book: 'Chemistry Basics', isbn: '978-0451524935', dueDate: '2024-10-25', daysOverdue: 5,  fine: 2.50  },
+    { id: 4, student: 'Sarah Connor', grade: 'Staff',    book: 'Advanced Biology', isbn: '978-1234567890', dueDate: '2024-10-28', daysOverdue: 2,  fine: 1.00  },
+];
+
+const overdueBadge = (days) => {
+    if (days >= 14) return 'bg-red-600 text-white';
+    if (days >= 7)  return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300';
+    return 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300';
+};
+
 const OverdueReports = () => {
     const [filter, setFilter] = useState('all');
 
-    const overdueBooks = [
-        { id: 1, student: 'Tommy Smith', grade: 'Grade 4A', book: 'Physics 101', isbn: '978-0743273565', dueDate: '2024-10-20', daysOverdue: 10, fine: 5.00 },
-        { id: 2, student: 'Alice Brown', grade: 'Grade 5B', book: 'World History', isbn: '978-0446310789', dueDate: '2024-10-22', daysOverdue: 8, fine: 4.00 },
-        { id: 3, student: 'John Doe', grade: 'Grade 6A', book: 'Chemistry Basics', isbn: '978-0451524935', dueDate: '2024-10-25', daysOverdue: 5, fine: 2.50 },
-        { id: 4, student: 'Sarah Connor', grade: 'Staff', book: 'Advanced Biology', isbn: '978-1234567890', dueDate: '2024-10-28', daysOverdue: 2, fine: 1.00 },
-    ];
+    const filtered = filter === 'all' ? OVERDUE
+        : filter === 'critical' ? OVERDUE.filter(b => b.daysOverdue >= 7)
+        : OVERDUE.filter(b => b.daysOverdue < 7);
 
-    const filteredBooks = filter === 'all' ? overdueBooks :
-        filter === 'critical' ? overdueBooks.filter(b => b.daysOverdue >= 7) :
-            overdueBooks.filter(b => b.daysOverdue < 7);
-
-    const totalFines = overdueBooks.reduce((a, b) => a + b.fine, 0);
-
-    const getSeverity = (days) => {
-        if (days >= 14) return 'bg-red-600 text-white';
-        if (days >= 7) return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300';
-        return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300';
-    };
+    const totalFines = OVERDUE.reduce((a, b) => a + b.fine, 0);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Overdue Books Report</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Track late returns and calculate fines.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Library <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Overdue Report</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Overdue Books</h1>
                 </div>
-                <button className="px-6 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-colors dark:bg-gray-700 dark:text-purple-400 w-full sm:w-auto">
-                    Export Report
+                <button className="px-4 py-1.5 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                    Export
                 </button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdueBooks.length}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Overdue</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{overdueBooks.filter(b => b.daysOverdue >= 7).length}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Critical (7+ days)</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">${totalFines.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Fines Due</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">$0.50</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Fine/Day</p>
-                </div>
+            {/* Stats strip */}
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                {[
+                    { label: 'Total Overdue',    value: OVERDUE.length,                                     cls: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' },
+                    { label: 'Critical (7+ days)',value: OVERDUE.filter(b => b.daysOverdue >= 7).length,    cls: 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' },
+                    { label: 'Total Fines',       value: `KES ${totalFines.toFixed(2)}`,                    cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                    { label: 'Fine/Day',          value: 'KES 0.50',                                        cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+                ].map(c => (
+                    <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{c.value}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                    </div>
+                ))}
             </div>
 
-            {/* Filter */}
-            <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
-                {['all', 'critical', 'recent'].map((f) => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors ${filter === f ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'}`}
-                    >
-                        {f === 'all' ? 'All Overdue' : f === 'critical' ? 'Critical (7+ days)' : 'Recent (<7 days)'}
+            {/* Filter tabs */}
+            <div className="flex-shrink-0 flex border-b border-slate-200 dark:border-gray-700">
+                {[
+                    { key: 'all',      label: 'All Overdue'     },
+                    { key: 'critical', label: 'Critical (7+ d)' },
+                    { key: 'recent',   label: 'Recent (<7 d)'   },
+                ].map(f => (
+                    <button key={f.key} onClick={() => setFilter(f.key)}
+                        className={`px-4 py-2 text-xs font-bold border-b-2 whitespace-nowrap transition-colors ${
+                            filter === f.key
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}>
+                        {f.label}
                     </button>
                 ))}
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left min-w-[800px]">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th className="px-6 py-4">Borrower</th>
-                            <th className="px-6 py-4">Book</th>
-                            <th className="px-6 py-4">Due Date</th>
-                            <th className="px-6 py-4 text-center">Days Overdue</th>
-                            <th className="px-6 py-4 text-right">Fine</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {filteredBooks.map((item) => (
-                            <tr key={item.id} className="hover:bg-purple-50 transition-colors dark:hover:bg-gray-700">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm mr-3 dark:bg-purple-900/50 dark:text-purple-300">
-                                            {item.student.split(' ').map(n => n[0]).join('')}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800 dark:text-gray-100">{item.student}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{item.grade}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <p className="font-medium text-gray-800 dark:text-gray-100">{item.book}</p>
-                                    <p className="text-xs text-gray-400 font-mono">{item.isbn}</p>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{item.dueDate}</td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${getSeverity(item.daysOverdue)}`}>
-                                        {item.daysOverdue} days
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right font-bold text-red-600 dark:text-red-400">${item.fine.toFixed(2)}</td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="text-purple-600 font-bold text-sm hover:underline dark:text-purple-400">Send Reminder</button>
-                                </td>
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div className="flex-1 overflow-auto">
+                    <table className="w-full text-left" style={{ minWidth: 680 }}>
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Borrower</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Book</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Due Date</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-center">Days Overdue</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Fine</th>
+                                <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filtered.map((item, i) => (
+                                <tr key={item.id} className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                    i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                }`}>
+                                    <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                        {String(i + 1).padStart(2, '0')}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{item.student}</p>
+                                        <p className="text-[10px] text-slate-400">{item.grade}</p>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <p className="text-xs text-slate-700 dark:text-slate-200">{item.book}</p>
+                                        <p className="text-[10px] font-mono text-slate-400">{item.isbn}</p>
+                                    </td>
+                                    <td className="px-3 py-2 text-[10px] font-mono text-slate-400">{item.dueDate}</td>
+                                    <td className="px-3 py-2 text-center">
+                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${overdueBadge(item.daysOverdue)}`}>
+                                            {item.daysOverdue}d
+                                        </span>
+                                    </td>
+                                    <td className="px-3 py-2 text-right text-xs font-bold font-mono text-red-500">
+                                        KES {item.fine.toFixed(2)}
+                                    </td>
+                                    <td className="px-3 py-2 text-right">
+                                        <button className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                            Remind
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {filtered.length === 0 && (
+                        <div className="py-12 text-center text-xs text-slate-400 italic">No overdue books in this filter.</div>
+                    )}
+                </div>
+                <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{filtered.length} record{filtered.length !== 1 ? 's' : ''}</p>
+                </div>
             </div>
         </div>
     );

@@ -168,4 +168,66 @@ class TransportController extends Controller
             
         return response()->json(['message' => 'Students assigned to route successfully']);
     }
+
+    // ─── Phase 5A: Transport Billing ─────────────────────────────────────────
+
+    /**
+     * GET /api/admin/transport/billing
+     * Overview of all routes with their fee_per_term and assigned student count.
+     */
+    public function billingOverview(Request $request)
+    {
+        $schoolId = $request->user()->school_id;
+
+        $routes = \Illuminate\Support\Facades\DB::table('transport_routes as r')
+            ->where('r.school_id', $schoolId)
+            ->leftJoin('students as s', function ($j) {
+                $j->on('s.transport_route_id', '=', 'r.id')
+                  ->where('s.status', '=', 'Active');
+            })
+            ->select([
+                'r.id', 'r.name', 'r.status',
+                'r.fee_per_term', 'r.pickup_point',
+                \Illuminate\Support\Facades\DB::raw('COUNT(s.id) as student_count'),
+                \Illuminate\Support\Facades\DB::raw('COUNT(s.id) * r.fee_per_term as total_expected_kes'),
+            ])
+            ->groupBy('r.id', 'r.name', 'r.status', 'r.fee_per_term', 'r.pickup_point')
+            ->orderBy('r.name')
+            ->get();
+
+        $summary = [
+            'total_routes'      => $routes->count(),
+            'total_students'    => $routes->sum('student_count'),
+            'total_expected_kes'=> $routes->sum('total_expected_kes') / 100,
+        ];
+
+        return response()->json(['data' => $routes, 'summary' => $summary]);
+    }
+
+    /**
+     * PATCH /api/admin/transport/routes/{id}/fee
+     * Body: { fee_per_term: integer (in KES), pickup_point?: string }
+     */
+    public function updateRouteFee(Request $request, $id)
+    {
+        $schoolId = $request->user()->school_id;
+        $route    = TransportRoute::where('id', $id)
+            ->where('school_id', $schoolId)->firstOrFail();
+
+        $data = $request->validate([
+            'fee_per_term' => 'required|integer|min:0',
+            'pickup_point' => 'nullable|string|max:255',
+        ]);
+
+        // Store as integer KES (not cents — transport fees are typically whole shillings)
+        $route->update([
+            'fee_per_term' => $data['fee_per_term'],
+            'pickup_point' => $data['pickup_point'] ?? $route->pickup_point,
+        ]);
+
+        return response()->json([
+            'message'      => 'Transport fee updated.',
+            'fee_per_term' => $route->fee_per_term,
+        ]);
+    }
 }

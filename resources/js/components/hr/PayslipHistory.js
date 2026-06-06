@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PayslipHistory — Payroll run list with generate action + mark-paid buttons
-// Route: /hr/payroll/history
-// ─────────────────────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const statusBadge = (status) => {
+    const cls = status === 'Paid' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+              : status === 'Processed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+              : 'bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-400';
+    return <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${cls}`}>{status}</span>;
+};
+
 const PayslipHistory = () => {
     const today = new Date();
     const [year,  setYear]  = useState(today.getFullYear());
     const [month, setMonth] = useState(today.getMonth() + 1);
     const [data,  setData]  = useState({ payslips: [], summary: {} });
-    const [loading, setLoading] = useState(true);
-    const [viewingId, setViewingId]  = useState(null);
+    const [loading,    setLoading]    = useState(true);
+    const [viewingId,  setViewingId]  = useState(null);
     const [processing, setProcessing] = useState({});
     const [error, setError] = useState('');
 
-    const months = [
-        'January','February','March','April','May','June',
-        'July','August','September','October','November','December',
-    ];
-    const years = Array.from({ length: 6 }, (_, i) => today.getFullYear() - i);
+    const YEARS = Array.from({ length: 6 }, (_, i) => today.getFullYear() - i);
 
     const fetchPayslips = useCallback(() => {
         setLoading(true); setError('');
@@ -57,148 +58,142 @@ const PayslipHistory = () => {
         }
     };
 
-    const fmt  = v => `KES ${Number(v || 0).toLocaleString()}`;
-    const s    = data.summary || {};
-
-    const statusPill = (status) => {
-        const styles = {
-            Paid:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-            Processed: 'bg-blue-100  text-blue-700  dark:bg-blue-900/30  dark:text-blue-400',
-            Draft:     'bg-gray-100  text-gray-600  dark:bg-gray-700     dark:text-gray-400',
-        };
-        return (
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${styles[status] || styles.Draft}`}>
-                {status}
-            </span>
-        );
-    };
+    const fmt = v => `KES ${Number(v || 0).toLocaleString()}`;
+    const s   = data.summary || {};
+    const payslips = data.payslips || [];
+    const inputCls = "px-3 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white";
 
     return (
-        <div className="space-y-6 animate-page-fade">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-800 dark:text-gray-100">Payslip History</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">View, manage, and mark payslips as paid.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        HR <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Payslip History</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Payslip History
+                        {!loading && payslips.length > 0 && <span className="ml-2 text-xs font-normal text-slate-400">— {payslips.length} payslips</span>}
+                    </h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <select value={month} onChange={e => setMonth(+e.target.value)}
-                        className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
-                        {months.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
+                <div className="flex items-center gap-2">
+                    <select value={month} onChange={e => setMonth(+e.target.value)} className={inputCls}>
+                        {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
                     </select>
-                    <select value={year} onChange={e => setYear(+e.target.value)}
-                        className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
-                        {years.map(y => <option key={y} value={y}>{y}</option>)}
+                    <select value={year} onChange={e => setYear(+e.target.value)} className={inputCls}>
+                        {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
             </div>
 
-            {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-bold dark:bg-red-900/20 dark:text-red-400">
-                    {error}
-                </div>
-            )}
+            {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md flex-shrink-0">{error}</p>}
 
-            {/* Summary Strip */}
-            {!loading && (data.payslips || []).length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Summary strip */}
+            {!loading && payslips.length > 0 && (
+                <div className="flex gap-2 flex-shrink-0 flex-wrap">
                     {[
-                        { label: 'Staff Paid',   value: s.count || 0,                   mono: true },
-                        { label: 'Total Gross',  value: fmt(s.total_gross),              mono: false },
-                        { label: 'Tax & Levies', value: fmt(s.total_deductions),         mono: false },
-                        { label: 'Net Payout',   value: fmt(s.total_net), highlight: true },
+                        { label: 'Staff Paid',   value: s.count || 0 },
+                        { label: 'Total Gross',  value: fmt(s.total_gross) },
+                        { label: 'Tax & Levies', value: fmt(s.total_deductions) },
+                        { label: 'Net Payout',   value: fmt(s.total_net) },
                     ].map(card => (
-                        <div key={card.label} className={`rounded-2xl p-5 border ${card.highlight ? 'bg-purple-600 border-purple-500 text-white' : 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700'}`}>
-                            <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${card.highlight ? 'text-purple-200' : 'text-gray-400'}`}>{card.label}</p>
-                            <p className={`text-2xl font-black ${card.highlight ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}>{card.value}</p>
+                        <div key={card.label} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md">
+                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">{card.value}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{card.label}</span>
                         </div>
                     ))}
                 </div>
             )}
 
             {/* Table */}
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {loading ? (
-                    <div className="py-20 flex flex-col items-center gap-3">
-                        <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading...</p>
-                    </div>
-                ) : (data.payslips || []).length === 0 ? (
-                    <div className="py-20 text-center">
-                        <p className="text-gray-400 font-bold uppercase text-sm tracking-widest">No payslips found for {months[month-1]} {year}</p>
-                        <p className="text-gray-300 text-xs mt-2 dark:text-gray-600">Generate payslips from Payroll → Generate Payslips</p>
+                    <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading payslips…</div>
+                ) : payslips.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        <p className="text-slate-400 text-sm">No payslips for {MONTHS[month - 1]} {year}.</p>
+                        <p className="text-slate-300 dark:text-slate-600 text-xs mt-1">Generate payslips from Payroll → Generate Payslips.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[900px]">
-                            <thead className="bg-gray-50/50 dark:bg-gray-700/50">
-                                <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                    <th className="px-6 py-4">Employee</th>
-                                    <th className="px-6 py-4 text-right">Basic</th>
-                                    <th className="px-6 py-4 text-right">Gross</th>
-                                    <th className="px-6 py-4 text-right">PAYE</th>
-                                    <th className="px-6 py-4 text-right">NSSF</th>
-                                    <th className="px-6 py-4 text-right">SHIF</th>
-                                    <th className="px-6 py-4 text-right">Housing</th>
-                                    <th className="px-6 py-4 text-right font-black text-gray-600 dark:text-gray-300">Net Pay</th>
-                                    <th className="px-6 py-4 text-center">Status</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                                {(data.payslips || []).map(p => (
-                                    <tr key={p.id} className="group hover:bg-purple-50/20 dark:hover:bg-purple-900/10 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <p className="font-black text-sm text-gray-800 dark:text-white uppercase tracking-tight">{p.name}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{p.role}</p>
-                                        </td>
-                                        <td className="px-6 py-5 text-right text-sm font-bold text-gray-600 dark:text-gray-400">{fmt(p.basic_salary)}</td>
-                                        <td className="px-6 py-5 text-right text-sm font-bold text-gray-700 dark:text-gray-300">{fmt(p.gross_salary)}</td>
-                                        <td className="px-6 py-5 text-right text-sm text-red-500 font-bold">{fmt(p.paye)}</td>
-                                        <td className="px-6 py-5 text-right text-sm text-orange-500 font-bold">{fmt(p.nssf)}</td>
-                                        <td className="px-6 py-5 text-right text-sm text-yellow-600 font-bold">{fmt(p.shif)}</td>
-                                        <td className="px-6 py-5 text-right text-sm text-amber-600 font-bold">{fmt(p.housing_levy)}</td>
-                                        <td className="px-6 py-5 text-right font-black text-gray-900 dark:text-white">{fmt(p.net_salary)}</td>
-                                        <td className="px-6 py-5 text-center">{statusPill(p.status)}</td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => setViewingId(p.id)}
-                                                    className="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-purple-600 hover:text-white transition-all dark:bg-gray-700 dark:text-gray-400">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                </button>
-                                                {p.status === 'Processed' && (
-                                                    <button onClick={() => markPaid(p.id)} disabled={processing[p.id]}
-                                                        className="px-3 py-1.5 bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-green-600 hover:text-white transition-all dark:bg-green-900/20 dark:text-green-400 disabled:opacity-50">
-                                                        {processing[p.id] ? '...' : 'Mark Paid'}
-                                                    </button>
-                                                )}
-                                                {p.status !== 'Paid' && (
-                                                    <button onClick={() => deletePayslip(p.id)} disabled={processing[`del_${p.id}`]}
-                                                        className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all dark:bg-red-900/20 disabled:opacity-50">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 860 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Employee</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Basic</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Gross</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-red-400 w-24 text-right">PAYE</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 w-24 text-right">NSSF</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-yellow-400 w-24 text-right">SHIF</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 w-24 text-right">Housing</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-200 w-28 text-right">Net Pay</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Status</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {payslips.map((p, i) => (
+                                        <tr key={p.id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{p.name}</span>
+                                                <span className="ml-2 text-[10px] text-slate-400">{p.role}</span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right text-xs font-mono text-slate-500 dark:text-slate-400">{fmt(p.basic_salary)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-slate-700 dark:text-slate-300">{fmt(p.gross_salary)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-red-500">{fmt(p.paye)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-orange-500">{fmt(p.nssf)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-yellow-600">{fmt(p.shif)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-amber-600">{fmt(p.housing_levy)}</td>
+                                            <td className="px-3 py-2 text-right text-xs font-bold text-slate-800 dark:text-white">{fmt(p.net_salary)}</td>
+                                            <td className="px-3 py-2 text-center">{statusBadge(p.status)}</td>
+                                            <td className="px-3 py-2 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => setViewingId(p.id)}
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                        View
+                                                    </button>
+                                                    {p.status === 'Processed' && (
+                                                        <button onClick={() => markPaid(p.id)} disabled={processing[p.id]}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-800 disabled:opacity-50 transition-colors">
+                                                            {processing[p.id] ? '…' : 'Paid'}
+                                                        </button>
+                                                    )}
+                                                    {p.status !== 'Paid' && (
+                                                        <button onClick={() => deletePayslip(p.id)} disabled={processing[`del_${p.id}`]}
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 disabled:opacity-50 transition-colors">
+                                                            {processing[`del_${p.id}`] ? '…' : 'Del'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{payslips.length} payslip{payslips.length !== 1 ? 's' : ''} · {MONTHS[month - 1]} {year}</p>
+                        </div>
+                    </>
                 )}
             </div>
 
-            {/* PayslipViewer Modal */}
-            {viewingId && (
-                <PayslipViewerModal id={viewingId} onClose={() => setViewingId(null)} />
-            )}
+            {viewingId && <PayslipViewerModal id={viewingId} onClose={() => setViewingId(null)}/>}
         </div>
     );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PayslipViewerModal — triggered from PayslipHistory row
-// ─────────────────────────────────────────────────────────────────────────────
+/* ── Payslip viewer modal — kept intact (print-optimised layout) ── */
 const PayslipViewerModal = ({ id, onClose }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -213,83 +208,52 @@ const PayslipViewerModal = ({ id, onClose }) => {
     const handlePrint = () => {
         const content = printRef.current.innerHTML;
         const win = window.open('', '_blank');
-        win.document.write(`
-            <html><head><title>Payslip</title>
+        win.document.write(`<html><head><title>Payslip</title>
             <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-                @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-            </style>
-            </head>
-            <body class="bg-white text-gray-900 p-8 font-sans">
-                ${content}
-                <script>
-                    // Wait for Tailwind to process classes before printing
-                    setTimeout(() => { window.print(); window.close(); }, 800);
-                </script>
-            </body></html>
-        `);
+            <style>@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }</style>
+            </head><body class="bg-white text-gray-900 p-8 font-sans">${content}
+            <script>setTimeout(() => { window.print(); window.close(); }, 800);</script>
+            </body></html>`);
         win.document.close();
     };
 
     const fmt = v => `KES ${Number(v || 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
-    const p   = data?.payslip   || {};
-    const e   = data?.employee  || {};
+    const p   = data?.payslip  || {};
+    const e   = data?.employee || {};
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-center p-4 sm:p-6 overflow-y-auto" onClick={e => e.target === e.currentTarget && onClose()}>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col h-fit max-h-[95vh] my-auto overflow-hidden border border-gray-100 dark:border-gray-700">
-                {/* Modal header (Fixed at top) */}
-                <div className="flex-shrink-0 flex items-center justify-between px-6 md:px-8 py-5 border-b border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900 z-10">
-                    <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">Payslip Document</h3>
-                    <div className="flex items-center gap-3">
+        <div className="fixed inset-0 bg-black/60 z-[100] flex justify-center p-4 sm:p-6 overflow-y-auto" onClick={ev => ev.target === ev.currentTarget && onClose()}>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl flex flex-col h-fit max-h-[95vh] my-auto overflow-hidden border border-slate-200 dark:border-gray-700">
+                <div className="flex-shrink-0 flex items-center justify-between px-5 py-3.5 bg-slate-50 dark:bg-gray-900/50 border-b border-slate-200 dark:border-gray-800">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Payslip Document</h3>
+                    <div className="flex items-center gap-2">
                         <button onClick={handlePrint}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 dark:shadow-none">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                            Print / Save
+                            className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 transition-colors">
+                            Print / Save PDF
                         </button>
-                        <button onClick={onClose} className="w-10 h-10 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
                     </div>
                 </div>
-
-                {/* Printable content wrapper (Scrolls) */}
-                <div className="overflow-y-auto flex-1 p-4 md:p-8 bg-gray-100/50 dark:bg-gray-900 min-h-[400px]">
+                <div className="overflow-y-auto flex-1 p-6 bg-gray-50 dark:bg-gray-900 min-h-[400px]">
                     {loading ? (
-                        <div className="h-full flex items-center justify-center">
-                            <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                        </div>
+                        <div className="h-full flex items-center justify-center text-slate-400">Loading…</div>
                     ) : (
-                        <div ref={printRef} className="max-w-3xl mx-auto bg-white p-8 md:p-12 shadow-sm rounded-xl border border-gray-200 print:border-none print:shadow-none">
-                            
-                            {/* ── Printable Header ── */}
+                        <div ref={printRef} className="max-w-3xl mx-auto bg-white p-8 md:p-12 shadow-sm rounded-lg border border-gray-200">
                             <div className="flex flex-col md:flex-row justify-between md:items-start border-b-[3px] border-indigo-950 pb-4 mb-6">
                                 <div>
                                     <div className="text-2xl font-black text-indigo-950 uppercase tracking-tight">SKULLU SCHOOL SYSTEM</div>
                                     <div className="text-[10px] text-gray-500 font-bold tracking-[0.15em] uppercase mt-1">Official Payslip — Confidential</div>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-left md:text-right">
-                                    <div className="bg-indigo-950 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest inline-block">
-                                        PAY PERIOD: {p.month_label}
-                                    </div>
-                                    <div className="mt-2 text-[10px] text-gray-500 font-bold tracking-widest uppercase">
-                                        REF: PAY-{String(p.id).padStart(6,'0')} | {p.status?.toUpperCase()}
-                                    </div>
+                                    <div className="bg-indigo-950 text-white px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest inline-block">PAY PERIOD: {p.month_label}</div>
+                                    <div className="mt-2 text-[10px] text-gray-500 font-bold tracking-widest uppercase">REF: PAY-{String(p.id || 0).padStart(6,'0')} | {p.status?.toUpperCase()}</div>
                                 </div>
                             </div>
-
-                            {/* ── Employee + Statutory Info ── */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                     <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Employee Details</h3>
                                     <div className="space-y-1.5">
-                                        {[
-                                            ['Full Name',    e.name],
-                                            ['Role',         e.role],
-                                            ['Department',   e.department],
-                                            ['Designation',  e.designation],
-                                            ['Date Joined',  e.date_of_joining],
-                                        ].map(([k, v]) => (
+                                        {[['Full Name', e.name],['Role', e.role],['Department', e.department],['Designation', e.designation],['Date Joined', e.date_of_joining]].map(([k, v]) => (
                                             <div key={k} className="flex justify-between items-center text-xs">
                                                 <span className="text-gray-500">{k}</span>
                                                 <span className="font-bold text-gray-800">{v || '—'}</span>
@@ -297,17 +261,10 @@ const PayslipViewerModal = ({ id, onClose }) => {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                     <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Statutory Registration</h3>
                                     <div className="space-y-1.5">
-                                        {[
-                                            ['National ID',    e.id_number],
-                                            ['KRA PIN',        e.kra_pin],
-                                            ['NSSF No.',       e.nssf_no],
-                                            ['SHIF No.',       e.shif_no],
-                                            ['Bank',           e.bank_name],
-                                            ['Account No.',    e.account_number],
-                                        ].map(([k, v]) => (
+                                        {[['National ID', e.id_number],['KRA PIN', e.kra_pin],['NSSF No.', e.nssf_no],['SHIF No.', e.shif_no],['Bank', e.bank_name],['Account No.', e.account_number]].map(([k, v]) => (
                                             <div key={k} className="flex justify-between items-center text-xs">
                                                 <span className="text-gray-500">{k}</span>
                                                 <span className="font-bold text-gray-800">{v || '—'}</span>
@@ -316,9 +273,7 @@ const PayslipViewerModal = ({ id, onClose }) => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* ── Earnings & Deductions Table ── */}
-                            <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-200 mb-6">
+                            <div className="overflow-hidden rounded-lg border border-gray-200 mb-6">
                                 <table className="w-full text-left">
                                     <thead className="bg-gray-100 border-b border-gray-200">
                                         <tr>
@@ -328,43 +283,21 @@ const PayslipViewerModal = ({ id, onClose }) => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-sm">
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-800 font-semibold">Basic Salary</td>
-                                            <td className="px-4 py-3 text-right font-black text-gray-800">{fmt(p.basic_salary)}</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-800 font-semibold">Allowance</td>
-                                            <td className="px-4 py-3 text-right font-black text-gray-800">{fmt(p.allowance)}</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-600">NSSF (National Social Security Fund)</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                            <td className="px-4 py-3 text-right font-bold text-red-500">{fmt(p.nssf)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-600">SHIF (Social Health Insurance Fund)</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                            <td className="px-4 py-3 text-right font-bold text-red-500">{fmt(p.shif)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-600">Affordable Housing Levy (1.5%)</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                            <td className="px-4 py-3 text-right font-bold text-red-500">{fmt(p.housing_levy)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-3 text-gray-600">PAYE (Pay-As-You-Earn Tax)</td>
-                                            <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                            <td className="px-4 py-3 text-right font-bold text-red-500">{fmt(p.paye)}</td>
-                                        </tr>
-                                        {p.other_deductions > 0 && (
-                                            <tr>
-                                                <td className="px-4 py-3 text-gray-600">Other Deductions</td>
-                                                <td className="px-4 py-3 text-right text-gray-400">—</td>
-                                                <td className="px-4 py-3 text-right font-bold text-red-500">{fmt(p.other_deductions)}</td>
+                                        {[
+                                            { label: 'Basic Salary', earn: fmt(p.basic_salary), deduct: null },
+                                            { label: 'Allowance',    earn: fmt(p.allowance),    deduct: null },
+                                            { label: 'NSSF',         earn: null, deduct: fmt(p.nssf) },
+                                            { label: 'SHIF',         earn: null, deduct: fmt(p.shif) },
+                                            { label: 'Affordable Housing Levy (1.5%)', earn: null, deduct: fmt(p.housing_levy) },
+                                            { label: 'PAYE',         earn: null, deduct: fmt(p.paye) },
+                                            ...(p.other_deductions > 0 ? [{ label: 'Other Deductions', earn: null, deduct: fmt(p.other_deductions) }] : []),
+                                        ].map(row => (
+                                            <tr key={row.label}>
+                                                <td className="px-4 py-3 text-gray-800 font-semibold">{row.label}</td>
+                                                <td className="px-4 py-3 text-right font-black text-gray-800">{row.earn || '—'}</td>
+                                                <td className={`px-4 py-3 text-right font-bold ${row.deduct ? 'text-red-500' : 'text-gray-400'}`}>{row.deduct || '—'}</td>
                                             </tr>
-                                        )}
+                                        ))}
                                     </tbody>
                                     <tfoot>
                                         <tr className="bg-gray-50 border-t-2 border-gray-200 text-sm">
@@ -379,11 +312,9 @@ const PayslipViewerModal = ({ id, onClose }) => {
                                     </tfoot>
                                 </table>
                             </div>
-
-                            {/* ── Footer ── */}
-                            <div className="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-8">
+                            <div className="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                                 <span>Generated: {p.processed_at} by {p.generated_by}</span>
-                                <span className="mt-2 sm:mt-0">This is a computer-generated payslip and requires no signature.</span>
+                                <span className="mt-2 sm:mt-0">Computer-generated payslip — no signature required.</span>
                             </div>
                         </div>
                     )}

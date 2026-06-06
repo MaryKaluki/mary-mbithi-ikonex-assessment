@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const LEVELS = ['Pre-Primary', 'Lower Primary', 'Upper Primary', 'Junior School', 'Senior School'];
-const inputCls = "w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40";
+const inputCls = "w-full px-3 py-2 border border-slate-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 /* ── Class form modal ─────────────────────────────────────────────────── */
 const ClassModal = ({ cls, teachers, onClose, onSaved }) => {
@@ -40,27 +40,30 @@ const ClassModal = ({ cls, teachers, onClose, onSaved }) => {
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="font-bold text-gray-800 dark:text-white">{cls?.id ? 'Edit Class' : 'Add New Class'}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg border border-slate-200 dark:border-gray-700">
+                {/* Modal header */}
+                <div className="flex items-center justify-between px-5 py-3.5 bg-slate-50 dark:bg-gray-900/50 border-b border-slate-200 dark:border-gray-700">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                        {cls?.id ? 'Edit Class' : 'Add New Class'}
+                    </h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+                <form onSubmit={handleSubmit} className="p-5 space-y-4">
+                    {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">{error}</p>}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Class Name *</label>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Class Name *</label>
                             <input required value={form.name} onChange={e => set('name', e.target.value)}
                                 placeholder="e.g. Grade 7" className={inputCls}/>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Section</label>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Section</label>
                             <input value={form.section} onChange={e => set('section', e.target.value)}
                                 placeholder="e.g. A, STEM" className={inputCls}/>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Level *</label>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Level *</label>
                         <select required value={form.level} onChange={e => set('level', e.target.value)} className={inputCls}>
                             <option value="">— Select level —</option>
                             {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
@@ -68,7 +71,7 @@ const ClassModal = ({ cls, teachers, onClose, onSaved }) => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Curriculum</label>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Curriculum</label>
                             <select value={form.curriculum_type} onChange={e => set('curriculum_type', e.target.value)} className={inputCls}>
                                 <option value="CBC">CBC</option>
                                 <option value="844">8-4-4</option>
@@ -76,13 +79,13 @@ const ClassModal = ({ cls, teachers, onClose, onSaved }) => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Capacity</label>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Capacity</label>
                             <input type="number" min="1" max="200" value={form.capacity}
                                 onChange={e => set('capacity', parseInt(e.target.value))} className={inputCls}/>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Class Teacher</label>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Class Teacher</label>
                         <select value={form.class_teacher_id} onChange={e => set('class_teacher_id', e.target.value)} className={inputCls}>
                             <option value="">— Unassigned —</option>
                             {teachers.map(t => (
@@ -90,10 +93,13 @@ const ClassModal = ({ cls, teachers, onClose, onSaved }) => {
                             ))}
                         </select>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700">Cancel</button>
+                    <div className="flex justify-end gap-2 pt-1">
+                        <button type="button" onClick={onClose}
+                            className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 transition-colors">
+                            Cancel
+                        </button>
                         <button type="submit" disabled={saving}
-                            className="px-6 py-2 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-60">
+                            className="px-5 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">
                             {saving ? 'Saving…' : (cls?.id ? 'Update Class' : 'Add Class')}
                         </button>
                     </div>
@@ -111,7 +117,7 @@ const StudentsModal = ({ cls, onClose }) => {
     const [search, setSearch]                   = useState('');
     const [loading, setLoading]                 = useState(true);
     const [saving, setSaving]                   = useState(false);
-    const [tab, setTab]                         = useState('current'); // 'current' | 'add'
+    const [tab, setTab]                         = useState('current');
 
     useEffect(() => {
         Promise.all([
@@ -120,7 +126,6 @@ const StudentsModal = ({ cls, onClose }) => {
         ]).then(([cur, all]) => {
             setCurrentStudents(cur.data);
             const curIds = cur.data.map(s => s.id);
-            // Show students NOT already in this class
             setAllStudents((all.data.students || []).filter(s => !curIds.includes(s.id)));
         }).catch(() => {}).finally(() => setLoading(false));
     }, [cls.id]);
@@ -128,6 +133,10 @@ const StudentsModal = ({ cls, onClose }) => {
     const toggle = (id) => setSelectedIds(s =>
         s.includes(id) ? s.filter(x => x !== id) : [...s, id]
     );
+    const toggleAll = () => {
+        setSelectedIds(selectedIds.length === filtered.length && filtered.length > 0
+            ? [] : filtered.map(s => s.id));
+    };
 
     const handleAssign = async () => {
         if (selectedIds.length === 0) return;
@@ -135,7 +144,6 @@ const StudentsModal = ({ cls, onClose }) => {
         try {
             await window.axios.post(`/api/admin/classes/${cls.id}/assign-students`, { student_ids: selectedIds });
             window.showToast?.('success', `${selectedIds.length} student(s) moved to ${cls.name}.`);
-            // Refresh
             const [cur, all] = await Promise.all([
                 window.axios.get(`/api/admin/classes/${cls.id}/students`),
                 window.axios.get('/api/admin/students'),
@@ -152,101 +160,131 @@ const StudentsModal = ({ cls, onClose }) => {
         }
     };
 
-    const filtered = tab === 'add'
-        ? allStudents.filter(s =>
-            `${s.first_name} ${s.last_name} ${s.admission_number}`.toLowerCase().includes(search.toLowerCase()))
-        : currentStudents.filter(s =>
-            `${s.first_name} ${s.last_name} ${s.admission_number}`.toLowerCase().includes(search.toLowerCase()));
+    const filtered = (tab === 'add' ? allStudents : currentStudents).filter(s =>
+        `${s.first_name} ${s.last_name} ${s.admission_number}`.toLowerCase().includes(search.toLowerCase())
+    );
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-100 dark:border-gray-700 flex flex-col max-h-[85vh]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl border border-slate-200 dark:border-gray-700 flex flex-col max-h-[85vh]">
+
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                <div className="flex items-center justify-between px-5 py-3.5 bg-slate-800 flex-shrink-0">
                     <div>
-                        <h3 className="font-bold text-gray-800 dark:text-white">Manage Students — {cls.name}</h3>
-                        <p className="text-xs text-gray-400">{currentStudents.length} student{currentStudents.length !== 1 ? 's' : ''} enrolled</p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Manage Students</p>
+                        <h3 className="text-sm font-bold text-white">{cls.name}</h3>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white text-xl leading-none transition-colors">&times;</button>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex gap-1 px-6 pt-4 pb-0 flex-shrink-0">
+                {/* Tabs + Search bar */}
+                <div className="flex flex-shrink-0 border-b border-slate-200 dark:border-gray-700 px-4 pt-2 gap-0.5">
                     {[
                         { id: 'current', label: `Enrolled (${currentStudents.length})` },
-                        { id: 'add',     label: `Add Students (${allStudents.length} available)` },
+                        { id: 'add',     label: `Add Students (${allStudents.length})` },
                     ].map(t => (
                         <button key={t.id} onClick={() => { setTab(t.id); setSearch(''); setSelectedIds([]); }}
-                            className={`px-4 py-2 text-sm font-bold rounded-t-lg border-b-2 transition-colors ${tab === t.id ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                            className={`px-4 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition-all duration-150 ${
+                                tab === t.id
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                            }`}>
                             {t.label}
                         </button>
                     ))}
                 </div>
-
-                {/* Search */}
-                <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-gray-700 flex-shrink-0">
                     <input value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="Search students…"
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary/40"/>
+                        placeholder="Search by name or admission number…"
+                        className={inputCls}/>
                 </div>
 
-                {/* List */}
+                {/* Student table */}
                 <div className="overflow-y-auto flex-1">
                     {loading ? (
-                        <div className="p-8 text-center text-gray-400">Loading…</div>
+                        <div className="p-8 text-center text-slate-400 text-sm">Loading…</div>
                     ) : filtered.length === 0 ? (
-                        <div className="p-8 text-center text-gray-400 text-sm">
+                        <div className="p-8 text-center text-slate-400 text-sm">
                             {tab === 'add' ? 'No other students available to add.' : 'No students in this class yet.'}
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                            {filtered.map(s => {
-                                const isSelected = selectedIds.includes(s.id);
-                                return (
-                                    <div key={s.id}
-                                        onClick={tab === 'add' ? () => toggle(s.id) : undefined}
-                                        className={`flex items-center gap-3 px-6 py-3 ${tab === 'add' ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30' : ''} ${isSelected ? 'bg-primary/5' : ''} transition-colors`}>
-                                        {tab === 'add' && (
-                                            <input type="checkbox" readOnly checked={isSelected}
-                                                className="w-4 h-4 rounded text-primary border-gray-300 focus:ring-primary flex-shrink-0"/>
-                                        )}
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-extrabold text-primary flex-shrink-0">
-                                            {s.first_name?.[0]}{s.last_name?.[0]}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="sticky top-0 z-10">
+                                <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                    {tab === 'add' && (
+                                        <th className="px-3 py-2.5 w-8">
+                                            <input type="checkbox"
+                                                className="w-3.5 h-3.5 rounded border-slate-500 cursor-pointer accent-primary"
+                                                checked={selectedIds.length === filtered.length && filtered.length > 0}
+                                                onChange={toggleAll}/>
+                                        </th>
+                                    )}
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Adm No</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Full Name</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Gender</th>
+                                    <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map((s, i) => {
+                                    const isSelected = selectedIds.includes(s.id);
+                                    return (
+                                        <tr key={s.id}
+                                            onClick={tab === 'add' ? () => toggle(s.id) : undefined}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 transition-colors ${
+                                                tab === 'add' ? 'cursor-pointer' : ''
+                                            } ${
+                                                isSelected ? 'bg-primary/5 dark:bg-primary/10'
+                                                : i % 2 === 0 ? 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10'
+                                                : 'bg-slate-50/70 dark:bg-gray-900/30 hover:bg-blue-50 dark:hover:bg-blue-900/10'
+                                            }`}>
+                                            {tab === 'add' && (
+                                                <td className="px-3 py-2">
+                                                    <input type="checkbox" readOnly checked={isSelected}
+                                                        className="w-3.5 h-3.5 rounded border-slate-300 cursor-pointer accent-primary"/>
+                                                </td>
+                                            )}
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2 font-mono text-xs text-slate-500 dark:text-slate-400 tracking-wide">
+                                                {s.admission_number}
+                                            </td>
+                                            <td className="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
                                                 {s.first_name} {s.last_name}
-                                            </p>
-                                            <p className="text-xs text-gray-400">{s.admission_number} · {s.grade_level || s.class || '—'}</p>
-                                        </div>
-                                        <span className="text-xs text-gray-400 flex-shrink-0">{s.gender}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                            </td>
+                                            <td className="px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400">{s.gender || '—'}</td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{s.grade_level || s.class || '—'}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     )}
                 </div>
 
                 {/* Footer */}
-                {tab === 'add' && (
-                    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-                        <span className="text-sm text-gray-500">
-                            {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select students to add'}
-                        </span>
-                        <div className="flex gap-3">
-                            <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-500">Cancel</button>
+                <div className="px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30 flex items-center justify-between flex-shrink-0">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                        {tab === 'add'
+                            ? selectedIds.length > 0 ? `${selectedIds.length} selected` : `${filtered.length} available`
+                            : `${currentStudents.length} enrolled`
+                        }
+                    </p>
+                    <div className="flex gap-2">
+                        <button onClick={onClose}
+                            className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 transition-colors">
+                            {tab === 'add' ? 'Cancel' : 'Close'}
+                        </button>
+                        {tab === 'add' && (
                             <button onClick={handleAssign} disabled={saving || selectedIds.length === 0}
-                                className="px-5 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-50">
-                                {saving ? 'Moving…' : `Add ${selectedIds.length || ''} Student${selectedIds.length !== 1 ? 's' : ''}`}
+                                className="px-4 py-1.5 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                                {saving ? 'Moving…' : `Add ${selectedIds.length || 0} Student${selectedIds.length !== 1 ? 's' : ''}`}
                             </button>
-                        </div>
+                        )}
                     </div>
-                )}
-                {tab === 'current' && (
-                    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end flex-shrink-0">
-                        <button onClick={onClose} className="px-5 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700">Close</button>
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );
@@ -254,11 +292,12 @@ const StudentsModal = ({ cls, onClose }) => {
 
 /* ── Main component ───────────────────────────────────────────────────── */
 const ClassManager = () => {
-    const [classes, setClasses]         = useState([]);
-    const [teachers, setTeachers]       = useState([]);
-    const [isLoading, setIsLoading]     = useState(true);
-    const [classModal, setClassModal]   = useState(null); // null | {} | {id,...}
-    const [studentsModal, setStudentsModal] = useState(null); // null | cls
+    const [classes, setClasses]             = useState([]);
+    const [teachers, setTeachers]           = useState([]);
+    const [isLoading, setIsLoading]         = useState(true);
+    const [search, setSearch]               = useState('');
+    const [classModal, setClassModal]       = useState(null);
+    const [studentsModal, setStudentsModal] = useState(null);
 
     const fetchAll = async () => {
         setIsLoading(true);
@@ -289,8 +328,16 @@ const ClassManager = () => {
         }
     };
 
+    const filtered = classes.filter(c =>
+        !search ||
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.level || '').toLowerCase().includes(search.toLowerCase()) ||
+        (c.teacher_name || '').toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6 pb-20">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {classModal !== null && (
                 <ClassModal
                     cls={classModal?.id ? classModal : null}
@@ -303,84 +350,133 @@ const ClassManager = () => {
                 <StudentsModal cls={studentsModal} onClose={() => { setStudentsModal(null); fetchAll(); }}/>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Classes &amp; Sections</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage school classes, assign teachers and students.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Admin <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Classes &amp; Sections</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Classes &amp; Sections
+                        {!isLoading && <span className="ml-2 text-xs font-normal text-slate-400">— {filtered.length} class{filtered.length !== 1 ? 'es' : ''}</span>}
+                    </h1>
                 </div>
                 <button onClick={() => setClassModal({})}
-                    className="px-4 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 shadow-lg shadow-primary/20 text-sm">
+                    className="px-4 py-2 bg-primary text-white font-bold rounded-md hover:bg-primary/90 text-sm transition-all duration-200">
                     + Add Class
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            {/* Filter */}
+            <div className="flex gap-2 flex-shrink-0">
+                <div className="flex-1 relative">
+                    <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Search class name, level, teacher…"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                        value={search} onChange={e => setSearch(e.target.value)}/>
+                </div>
+                {!isLoading && (
+                    <div className="flex items-center px-3 py-1.5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md text-xs text-slate-500 whitespace-nowrap select-none">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 mr-1">{filtered.length}</span> records
+                    </div>
+                )}
+            </div>
+
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {isLoading ? (
-                    <div className="p-12 text-center text-gray-400">Loading classes…</div>
-                ) : classes.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500 dark:text-gray-400 font-bold">
-                        No classes found. Add your first class to get started.
+                    <div className="p-8 text-center text-slate-400 text-sm">Loading classes…</div>
+                ) : filtered.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">
+                            {search ? 'No classes match your search.' : 'No classes found. Add your first class to get started.'}
+                        </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[750px]">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Class</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Level</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Curriculum</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider">Class Teacher</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Students</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Capacity</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-wider text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                                {classes.map(cls => (
-                                    <tr key={cls.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors group">
-                                        <td className="px-6 py-4 font-bold text-gray-800 dark:text-gray-100">
-                                            {cls.name}
-                                            {cls.section && <span className="ml-1 text-xs text-gray-400 font-normal">({cls.section})</span>}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{cls.level}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                                                {cls.curriculum_type}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {cls.teacher_name && cls.teacher_name !== 'Unassigned' ? (
-                                                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{cls.teacher_name}</span>
-                                            ) : (
-                                                <span className="text-xs text-gray-300 dark:text-gray-600 italic">Unassigned</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <button onClick={() => setStudentsModal(cls)}
-                                                className="text-sm font-extrabold text-primary hover:underline">
-                                                {cls.student_count}
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`text-sm font-bold ${cls.student_count >= cls.capacity ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
-                                                {cls.capacity}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => setStudentsModal(cls)}
-                                                    className="text-xs font-bold text-gray-400 hover:text-primary transition-colors">Students</button>
-                                                <button onClick={() => setClassModal(cls)}
-                                                    className="text-xs font-bold text-primary hover:underline transition-colors">Edit</button>
-                                                <button onClick={() => handleDelete(cls.id)}
-                                                    className="text-xs font-bold text-red-400 hover:text-red-600 transition-colors">Delete</button>
-                                            </div>
-                                        </td>
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 700 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Class / Section</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Level</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24">Curriculum</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Class Teacher</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Students</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Capacity</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28 text-right">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((cls, i) => (
+                                        <tr key={cls.id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors group ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{cls.name}</span>
+                                                {cls.section && (
+                                                    <span className="ml-1.5 text-[10px] font-mono text-slate-400">({cls.section})</span>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{cls.level}</td>
+                                            <td className="px-3 py-2">
+                                                <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                                    {cls.curriculum_type}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
+                                                {cls.teacher_name && cls.teacher_name !== 'Unassigned'
+                                                    ? <span className="font-semibold">{cls.teacher_name}</span>
+                                                    : <span className="text-slate-300 dark:text-slate-600 italic">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <button onClick={() => setStudentsModal(cls)}
+                                                    className="text-sm font-extrabold text-primary hover:text-primary/70 transition-colors">
+                                                    {cls.student_count}
+                                                </button>
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className={`text-xs font-bold ${cls.student_count >= cls.capacity ? 'text-red-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                    {cls.capacity}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <button onClick={() => setStudentsModal(cls)}
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-primary transition-colors">
+                                                        Students
+                                                    </button>
+                                                    <button onClick={() => setClassModal(cls)}
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                        Edit
+                                                    </button>
+                                                    <button onClick={() => handleDelete(cls.id)}
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition-colors">
+                                                        Del
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                {filtered.length} class{filtered.length !== 1 ? 'es' : ''}
+                                {search && ` · filtered from ${classes.length}`}
+                            </p>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

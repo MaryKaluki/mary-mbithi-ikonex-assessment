@@ -2,6 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 const STATUSES = ['Present', 'Late', 'Absent', 'Excused'];
 
+const statusColor = (s) => {
+    if (s === 'Present') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (s === 'Late')    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    if (s === 'Absent')  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    return 'bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300';
+};
+
 const AttendanceMark = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [searchTerm, setSearchTerm]     = useState('');
@@ -23,18 +30,13 @@ const AttendanceMark = () => {
                 const map = {};
                 members.forEach(m => { map[m.id] = m.status || 'Present'; });
                 setStatusMap(map);
-                const depts = [...new Set(members.map(m => m.department).filter(Boolean))].sort();
-                setDepartments(depts);
+                setDepartments([...new Set(members.map(m => m.department).filter(Boolean))].sort());
             })
             .catch(() => setError('Failed to load staff attendance.'))
             .finally(() => setLoading(false));
     }, [selectedDate]);
 
     useEffect(() => { fetchStaff(); }, [fetchStaff]);
-
-    const updateStatus = (id, newStatus) => {
-        setStatusMap(prev => ({ ...prev, [id]: newStatus }));
-    };
 
     const saveAttendance = () => {
         setSaving(true);
@@ -53,139 +55,124 @@ const AttendanceMark = () => {
         return matchSearch && matchDept;
     });
 
-    const stats = {
-        Present: staff.filter(s => statusMap[s.id] === 'Present').length,
-        Late:    staff.filter(s => statusMap[s.id] === 'Late').length,
-        Absent:  staff.filter(s => statusMap[s.id] === 'Absent').length,
-        Excused: staff.filter(s => statusMap[s.id] === 'Excused').length,
-    };
-
-    const getInitials = name =>
-        name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
+    const stats = STATUSES.reduce((acc, s) => {
+        acc[s] = staff.filter(m => statusMap[m.id] === s).length;
+        return acc;
+    }, {});
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Mark Staff Attendance</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Record daily attendance for all staff members.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        HR <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Mark Attendance</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Mark Staff Attendance
+                        {!loading && <span className="ml-2 text-xs font-normal text-slate-400">— {filteredStaff.length} staff</span>}
+                    </h1>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="date"
-                        value={selectedDate}
+                <div className="flex items-center gap-2">
+                    <input type="date" value={selectedDate}
                         onChange={e => setSelectedDate(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    />
-                    <button
-                        onClick={saveAttendance}
-                        disabled={saving || staff.length === 0}
-                        className="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
-                    >
-                        {saving ? 'Saving...' : 'Save Attendance'}
+                        className="px-3 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"/>
+                    <button onClick={saveAttendance} disabled={saving || staff.length === 0}
+                        className="px-4 py-1.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                        {saving ? 'Saving…' : 'Save Attendance'}
                     </button>
                 </div>
             </div>
 
-            {error && (
-                <div className="p-3 border border-gray-200 rounded-lg text-gray-700 text-sm dark:border-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
-                    {error}
-                </div>
-            )}
+            {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md flex-shrink-0">{error}</p>}
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Stats strip */}
+            <div className="flex gap-2 flex-shrink-0">
                 {STATUSES.map(s => (
-                    <div key={s} className="bg-white p-4 rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats[s]}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{s}</p>
+                    <div key={s} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${
+                        s === 'Present' ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' :
+                        s === 'Late'    ? 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' :
+                        s === 'Absent'  ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' :
+                        'border-slate-200 bg-slate-50 dark:border-gray-600 dark:bg-gray-800'
+                    }`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">{stats[s]}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{s}</span>
                     </div>
                 ))}
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 dark:bg-gray-800 dark:border-gray-700">
-                <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Search by name or role..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                    />
+            <div className="flex gap-2 flex-shrink-0">
+                <div className="flex-1 relative">
+                    <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Search by name or role…"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)}/>
                 </div>
-                <select
-                    value={department}
-                    onChange={e => setDepartment(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
+                <select value={department} onChange={e => setDepartment(e.target.value)}
+                    className="px-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-gray-200 w-40">
                     <option value="all">All Departments</option>
                     {departments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
             </div>
 
-            {/* Staff List */}
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin mb-4"></div>
-                    <p className="text-sm">Loading staff directory...</p>
-                </div>
-            ) : (
-                <>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider dark:bg-gray-700/50 dark:text-gray-400">
-                                    <tr>
-                                        <th className="px-6 py-4">Staff Member</th>
-                                        <th className="px-6 py-4 hidden sm:table-cell">Department</th>
-                                        <th className="px-6 py-4 text-center">Status</th>
-                                        <th className="px-6 py-4 text-center">Mark</th>
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading staff directory…</div>
+                ) : filteredStaff.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">No staff members match your filters.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 600 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Staff Member</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Department</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-center">Status</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-36 text-center">Mark</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {filteredStaff.map(member => {
+                                <tbody>
+                                    {filteredStaff.map((member, i) => {
                                         const current = statusMap[member.id] || 'Present';
                                         return (
-                                            <tr key={member.id} className="hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/50">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm dark:bg-gray-600 dark:text-gray-300">
-                                                            {getInitials(member.name)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{member.name}</p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">{member.role}</p>
-                                                        </div>
-                                                    </div>
+                                            <tr key={member.id}
+                                                className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                    i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                                }`}>
+                                                <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                    {String(i + 1).padStart(2, '0')}
                                                 </td>
-                                                <td className="px-6 py-4 hidden sm:table-cell">
-                                                    <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-semibold dark:bg-gray-700 dark:text-gray-300">
-                                                        {member.department || '—'}
-                                                    </span>
+                                                <td className="px-3 py-2">
+                                                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{member.name}</span>
+                                                    <span className="ml-2 text-[10px] text-slate-400 dark:text-slate-500">{member.role}</span>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="px-3 py-1 border border-gray-300 rounded text-xs font-bold uppercase tracking-wide text-gray-600 dark:border-gray-600 dark:text-gray-300">
+                                                <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{member.department || '—'}</td>
+                                                <td className="px-3 py-2 text-center">
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${statusColor(current)}`}>
                                                         {current}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-2">
                                                     <div className="flex items-center justify-center gap-1">
                                                         {STATUSES.map(status => (
-                                                            <button
-                                                                key={status}
-                                                                onClick={() => updateStatus(member.id, status)}
+                                                            <button key={status}
+                                                                onClick={() => setStatusMap(prev => ({ ...prev, [member.id]: status }))}
                                                                 title={status}
-                                                                className={`w-8 h-8 flex items-center justify-center rounded text-xs font-black transition-colors ${
+                                                                className={`w-7 h-7 flex items-center justify-center rounded text-[10px] font-black transition-colors ${
                                                                     current === status
-                                                                        ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                                                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
-                                                                }`}
-                                                            >
+                                                                        ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-gray-900'
+                                                                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                                                                }`}>
                                                                 {status.charAt(0)}
                                                             </button>
                                                         ))}
@@ -197,15 +184,12 @@ const AttendanceMark = () => {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-
-                    {filteredStaff.length === 0 && (
-                        <div className="bg-white rounded-xl p-16 text-center shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                            <p className="text-gray-500 dark:text-gray-400 font-semibold">No staff members match your filters.</p>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{filteredStaff.length} staff member{filteredStaff.length !== 1 ? 's' : ''}</p>
                         </div>
-                    )}
-                </>
-            )}
+                    </>
+                )}
+            </div>
         </div>
     );
 };

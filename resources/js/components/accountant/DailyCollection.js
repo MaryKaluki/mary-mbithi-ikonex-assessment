@@ -1,98 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SkeletonLoader } from '../common/Loader';
+
+const METHOD_COLORS = {
+    mpesa:          'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    bank_transfer:  'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    cash:           'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    cheque:         'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+    standing_order: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+    card:           'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+};
+
+const METHOD_LABELS = {
+    mpesa: 'M-Pesa', bank_transfer: 'Bank Transfer', cash: 'Cash',
+    cheque: 'Cheque', standing_order: 'Standing Order', card: 'Card',
+};
 
 const DailyCollection = () => {
-    const [selectedDate, setSelectedDate] = useState('2024-10-28');
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [data, setData]     = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const collections = [
-        { id: 1, time: '08:15', receipt: 'RCP-0150', student: 'John Smith', amount: 5000, method: 'M-Pesa' },
-        { id: 2, time: '09:30', receipt: 'RCP-0151', student: 'Alice Brown', amount: 12000, method: 'Bank Transfer' },
-        { id: 3, time: '10:45', receipt: 'RCP-0152', student: 'Emily Davis', amount: 3500, method: 'Cash' },
-        { id: 4, time: '11:20', receipt: 'RCP-0153', student: 'Michael Lee', amount: 8000, method: 'M-Pesa' },
-        { id: 5, time: '14:10', receipt: 'RCP-0154', student: 'Sarah Wilson', amount: 15000, method: 'Bank Transfer' },
-        { id: 6, time: '15:45', receipt: 'RCP-0155', student: 'Tommy Davis', amount: 10000, method: 'Cheque' },
-    ];
-
-    const methodTotals = {
-        'M-Pesa': collections.filter(c => c.method === 'M-Pesa').reduce((a, b) => a + b.amount, 0),
-        'Bank Transfer': collections.filter(c => c.method === 'Bank Transfer').reduce((a, b) => a + b.amount, 0),
-        'Cash': collections.filter(c => c.method === 'Cash').reduce((a, b) => a + b.amount, 0),
-        'Cheque': collections.filter(c => c.method === 'Cheque').reduce((a, b) => a + b.amount, 0),
+    const fetchCollection = async (date) => {
+        setLoading(true);
+        try {
+            const res = await window.axios.get('/api/finance/daily-collection', { params: { date } });
+            setData(res.data);
+        } catch { setData(null); }
+        finally { setLoading(false); }
     };
 
-    const totalCollection = collections.reduce((a, b) => a + b.amount, 0);
+    useEffect(() => { fetchCollection(selectedDate); }, [selectedDate]);
+
+    const breakdown = data?.breakdown || {};
+    const grandTotal = data?.grand_total || 0;
+    const timeline = data?.timeline || [];
+
+    const statCards = [
+        { label: 'Total',    value: grandTotal,                      cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+        { label: 'M-Pesa',  value: breakdown.mpesa?.total  || 0,    cls: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' },
+        { label: 'Bank',    value: breakdown.bank_transfer?.total || 0, cls: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20' },
+        { label: 'Cash',    value: breakdown.cash?.total   || 0,    cls: 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' },
+        { label: 'Cheque',  value: breakdown.cheque?.total || 0,    cls: 'border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-800' },
+    ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Daily Collection Report</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Fee collections for selected date</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Finance <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Daily Collection</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Daily Collection Report</h1>
                 </div>
-                <div className="flex gap-3">
-                    <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    />
-                    <button className="px-6 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg dark:bg-gray-700 dark:text-purple-400">
-                        Print Report
+                <div className="flex gap-2 items-center">
+                    <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+                        className="px-3 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <button onClick={() => window.print()}
+                        className="px-4 py-1.5 border border-slate-300 dark:border-gray-600 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                        Print
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-100 col-span-2 md:col-span-1 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 uppercase font-bold dark:text-gray-400">Total</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">KSh {totalCollection.toLocaleString()}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 uppercase font-bold dark:text-gray-400">M-Pesa</p>
-                    <p className="text-xl font-bold text-green-600 dark:text-green-400">KSh {methodTotals['M-Pesa'].toLocaleString()}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 uppercase font-bold dark:text-gray-400">Bank</p>
-                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">KSh {methodTotals['Bank Transfer'].toLocaleString()}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 uppercase font-bold dark:text-gray-400">Cash</p>
-                    <p className="text-xl font-bold text-orange-600 dark:text-orange-400">KSh {methodTotals['Cash'].toLocaleString()}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 uppercase font-bold dark:text-gray-400">Cheque</p>
-                    <p className="text-xl font-bold text-gray-600 dark:text-gray-300">KSh {methodTotals['Cheque'].toLocaleString()}</p>
-                </div>
+            {/* Stats strip */}
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                {statCards.map(c => (
+                    <div key={c.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${c.cls}`}>
+                        <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
+                            KSh {Number(c.value).toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{c.label}</span>
+                    </div>
+                ))}
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto dark:bg-gray-800 dark:border-gray-700">
-                <table className="w-full text-left min-w-[700px]">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th className="px-4 py-3">Time</th>
-                            <th className="px-4 py-3">Receipt No</th>
-                            <th className="px-4 py-3">Student</th>
-                            <th className="px-4 py-3">Payment Method</th>
-                            <th className="px-4 py-3 text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                        {collections.map(col => (
-                            <tr key={col.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{col.time}</td>
-                                <td className="px-4 py-3 font-mono text-sm text-purple-600 dark:text-purple-400">{col.receipt}</td>
-                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{col.student}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{col.method}</td>
-                                <td className="px-4 py-3 text-right font-bold text-green-600 dark:text-green-400">KSh {col.amount.toLocaleString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                    <tfoot className="bg-gray-100 font-bold dark:bg-gray-700">
-                        <tr>
-                            <td className="px-4 py-3 text-gray-800 dark:text-gray-100" colSpan="4">Total for {selectedDate}</td>
-                            <td className="px-4 py-3 text-right text-purple-600 dark:text-purple-400">KSh {totalCollection.toLocaleString()}</td>
-                        </tr>
-                    </tfoot>
-                </table>
+            {/* Breakdown table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {loading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : (
+                    <>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left" style={{ minWidth: 480 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Payment Method</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-24 text-right">Transactions</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-36 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(breakdown).map(([method, stats], i) => (
+                                        <tr key={method} className={`border-b border-slate-100 dark:border-gray-700/60 ${
+                                            i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                        }`}>
+                                            <td className="px-3 py-2.5">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${METHOD_COLORS[method] || METHOD_COLORS.cash}`}>
+                                                    {METHOD_LABELS[method] || method}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right text-xs font-mono text-slate-500">
+                                                {stats.count}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right text-xs font-bold font-mono text-emerald-600">
+                                                {stats.total > 0 ? `KSh ${Number(stats.total).toLocaleString()}` : '—'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-slate-50 dark:bg-gray-900/30 border-t border-slate-200 dark:border-gray-700">
+                                        <td className="px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                                            Total for {selectedDate}
+                                        </td>
+                                        <td className="px-3 py-2.5 text-right text-xs font-mono text-slate-500">
+                                            {Object.values(breakdown).reduce((a, b) => a + b.count, 0)} txns
+                                        </td>
+                                        <td className="px-3 py-2.5 text-right text-xs font-bold font-mono text-slate-800 dark:text-slate-100">
+                                            KSh {Number(grandTotal).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            {grandTotal === 0 && (
+                                <div className="py-12 text-center text-xs text-slate-400 italic">No collections recorded for {selectedDate}.</div>
+                            )}
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                {Object.values(breakdown).reduce((a, b) => a + b.count, 0)} transactions — {selectedDate}
+                            </p>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

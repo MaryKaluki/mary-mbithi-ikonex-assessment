@@ -2,112 +2,186 @@ import React, { useState, useEffect } from 'react';
 import { SkeletonLoader } from '../common/Loader';
 
 const ParentList = () => {
+    const [parents, setParents]       = useState([]);
+    const [isLoading, setIsLoading]   = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [parents, setParents] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [profile, setProfile]       = useState(null);
 
-    useEffect(() => {
-        fetchParents();
-    }, []);
+    useEffect(() => { fetchParents(); }, []);
 
     const fetchParents = async () => {
         setIsLoading(true);
         try {
             const res = await window.axios.get('/api/admin/users?type=parents');
             setParents(res.data.users || []);
-        } catch (err) {
-            window.showToast('error', 'Failed to load parents directory.');
-            console.error(err);
+        } catch {
+            window.showToast('error', 'Failed to load parents.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const filteredParents = parents.filter(parent =>
-        parent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        parent.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = parents.filter(p => {
+        const q = searchTerm.toLowerCase();
+        return !q ||
+            p.name.toLowerCase().includes(q) ||
+            p.email.toLowerCase().includes(q) ||
+            (p.phone || '').includes(q);
+    });
 
     return (
-        <div className="space-y-6 pb-20">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Parent Directory</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">View registered portal access for parents and guardians.</p>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Admin <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Parent Directory</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">
+                        Parent Directory
+                        {!isLoading && <span className="ml-2 text-xs font-normal text-slate-400">— {filtered.length} record{filtered.length !== 1 ? 's' : ''}</span>}
+                    </h1>
                 </div>
-                <button className="px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors shadow-lg w-full sm:w-auto text-center">
+                <button className="px-4 py-2 bg-primary text-white font-bold rounded-md hover:bg-primary/90 text-sm transition-all duration-200">
                     + Add Portal User
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 dark:bg-zinc-800 dark:border-zinc-700">
-                <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-gray-400">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Search by Parent Name or Email..."
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-gray-200 dark:placeholder-gray-500 transition-colors"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            <div className="flex gap-2 flex-shrink-0">
+                <div className="flex-1 relative">
+                    <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Search name, email, phone…"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)}/>
                 </div>
-            </div>
-
-            {/* List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 dark:bg-zinc-800 dark:border-zinc-700">
-                {isLoading ? (
-                    <div className="p-6"><SkeletonLoader type="table" /></div>
-                ) : filteredParents.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500 font-bold dark:text-gray-400">
-                        No parents found matching your criteria.
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
-                            <thead className="bg-gray-50 dark:bg-zinc-900/50 border-b border-gray-200 dark:border-zinc-700">
-                                <tr>
-                                    <th className="px-6 py-4 text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Parent Name</th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Linked Children</th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Contact Info</th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-zinc-700/50">
-                                {filteredParents.map((parent) => (
-                                    <tr key={parent.id} className="hover:bg-primary/5 transition-colors duration-150 group dark:hover:bg-zinc-700/50">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs mr-3">
-                                                    {parent.name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="font-bold text-gray-800 dark:text-gray-200">{parent.name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                            {parent.children_names && parent.children_names.length > 0 
-                                                ? parent.children_names.join(', ') 
-                                                : <span className="text-gray-400 italic">No linked students</span>}
-                                        </td>
-                                        <td className="px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-widest uppercase">
-                                            <div className="flex items-center mb-1"><svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>{parent.email}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2 py-1 text-[10px] uppercase font-black tracking-wider rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Portal Active</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-primary hover:underline font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity">Select</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {!isLoading && (
+                    <div className="flex items-center px-3 py-1.5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-md text-xs text-slate-500 whitespace-nowrap select-none">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 mr-1">{filtered.length}</span> records
                     </div>
                 )}
             </div>
+
+            {/* Table */}
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
+                {isLoading ? (
+                    <div className="p-6"><SkeletonLoader type="table"/></div>
+                ) : filtered.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">
+                            {searchTerm ? 'No parents match your search.' : 'No parent portal users registered yet.'}
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 620 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Full Name</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Email</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-32">Phone</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Linked Children</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Status</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-16 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((p, i) => (
+                                        <tr key={p.id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{p.name}</span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono">{p.email}</td>
+                                            <td className="px-3 py-2 text-xs font-mono text-slate-500 dark:text-slate-400">
+                                                {p.phone || <span className="text-slate-300 dark:text-slate-600 font-sans">—</span>}
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                                                {p.children_names?.length > 0
+                                                    ? p.children_names.join(', ')
+                                                    : <span className="text-slate-300 dark:text-slate-600 italic">No linked students</span>}
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                                    Active
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                <button onClick={() => setProfile(p)}
+                                                    className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                {filtered.length} parent{filtered.length !== 1 ? 's' : ''}
+                                {searchTerm && ` · filtered from ${parents.length}`}
+                            </p>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Profile Drawer */}
+            {profile && (
+                <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/40" onClick={() => setProfile(null)}>
+                    <div className="bg-white dark:bg-gray-800 h-full w-full max-w-sm shadow-2xl border-l border-slate-200 dark:border-gray-700 flex flex-col overflow-y-auto"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="bg-slate-800 px-5 py-4 flex items-start justify-between flex-shrink-0">
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">Parent Profile</p>
+                                <h3 className="text-base font-bold text-white leading-tight">{profile.name}</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">{profile.email}</p>
+                            </div>
+                            <button onClick={() => setProfile(null)} className="text-slate-400 hover:text-white transition-colors text-2xl leading-none">&times;</button>
+                        </div>
+                        <div className="flex-1 p-5 space-y-5">
+                            <section>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-gray-700 pb-1 mb-3">Contact Details</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Phone</p>
+                                        <p className="text-xs font-mono text-slate-800 dark:text-slate-200">{profile.phone || '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Email</p>
+                                        <p className="text-xs text-slate-800 dark:text-slate-200 break-all">{profile.email}</p>
+                                    </div>
+                                </div>
+                            </section>
+                            {profile.children_names?.length > 0 && (
+                                <section>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-gray-700 pb-1 mb-3">Linked Children</p>
+                                    <div className="space-y-1.5">
+                                        {profile.children_names.map((name, i) => (
+                                            <div key={i} className="flex items-center gap-2 py-1.5 border-b border-slate-100 dark:border-gray-700 last:border-0">
+                                                <span className="text-[10px] font-mono text-slate-300 w-5">{String(i + 1).padStart(2, '0')}</span>
+                                                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

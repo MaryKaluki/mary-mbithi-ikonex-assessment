@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
+const rateBadge = (r) => {
+    if (r >= 90) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (r >= 75) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+};
+
 const AttendanceHistory = () => {
-    const [classes, setClasses]   = useState([]);
-    const [classId, setClassId]   = useState('');
-    const [from, setFrom]         = useState(() => {
-        const d = new Date(); d.setDate(1);
-        return d.toISOString().split('T')[0];
-    });
-    const [to, setTo]             = useState(new Date().toISOString().split('T')[0]);
-    const [data, setData]         = useState(null);
-    const [loading, setLoading]   = useState(false);
+    const [classes,      setClasses]      = useState([]);
+    const [classId,      setClassId]      = useState('');
+    const [from,         setFrom]         = useState(() => { const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0]; });
+    const [to,           setTo]           = useState(new Date().toISOString().split('T')[0]);
+    const [data,         setData]         = useState(null);
+    const [loading,      setLoading]      = useState(false);
     const [classLoading, setClassLoading] = useState(true);
 
     useEffect(() => {
@@ -38,49 +41,52 @@ const AttendanceHistory = () => {
     const summary = data?.summary ?? [];
     const daily   = data?.daily   ?? [];
 
-    const rateColor = (r) => r >= 90 ? 'text-green-600' : r >= 75 ? 'text-yellow-600' : 'text-red-500';
-
     return (
-        <div className="space-y-6">
-            <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">Attendance History</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">View attendance trends for your classes</p>
+        <div className="flex flex-col space-y-3 h-full pb-6">
+
+            {/* Header */}
+            <div className="flex items-center justify-between flex-shrink-0">
+                <div>
+                    <nav className="text-[10px] text-slate-400 mb-0.5 uppercase tracking-wider">
+                        Teacher <span className="mx-1">/</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-semibold">Attendance History</span>
+                    </nav>
+                    <h1 className="text-base font-bold text-slate-800 dark:text-gray-100 leading-tight">Attendance History</h1>
+                </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Class</label>
+            {/* Filter bar */}
+            <div className="flex flex-wrap gap-2 items-end flex-shrink-0">
+                <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Class</label>
                     <select value={classId} onChange={e => setClassId(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
-                        {classLoading ? <option>Loading…</option> : classes.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
+                        className="px-2.5 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {classLoading ? <option>Loading…</option> : classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                 </div>
-                <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">From</label>
+                <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">From</label>
                     <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40"/>
+                        className="px-2.5 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
-                <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">To</label>
+                <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">To</label>
                     <input type="date" value={to} max={new Date().toISOString().split('T')[0]} onChange={e => setTo(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40"/>
+                        className="px-2.5 py-1.5 border border-slate-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
             </div>
 
-            {/* Daily bar chart */}
+            {/* Daily bar chart — compact overview */}
             {daily.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5">
-                    <p className="text-xs font-black uppercase text-gray-400 tracking-wider mb-4">Daily Overview</p>
-                    <div className="flex items-end gap-1 h-20 overflow-x-auto">
+                <div className="flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Daily Attendance Rate</p>
+                    <div className="flex items-end gap-0.5 h-16 overflow-x-auto">
                         {daily.map((d, i) => {
                             const pct = d.total > 0 ? Math.round(((d.present + d.late) / d.total) * 100) : 0;
                             return (
-                                <div key={i} className="flex-1 min-w-[20px] flex flex-col items-center gap-1" title={`${d.date}: ${pct}%`}>
-                                    <div className="w-full rounded-t" style={{ height: `${pct}%`, minHeight: 2, background: pct >= 90 ? '#22c55e' : pct >= 75 ? '#eab308' : '#ef4444' }}/>
-                                    <span className="text-[8px] text-gray-300 dark:text-gray-600 rotate-90 origin-center whitespace-nowrap">{d.date.slice(5)}</span>
+                                <div key={i} className="flex-1 min-w-[16px] flex flex-col items-center gap-0.5" title={`${d.date}: ${pct}%`}>
+                                    <div className="w-full rounded-t" style={{ height: `${pct}%`, minHeight: 2, background: pct >= 90 ? '#10b981' : pct >= 75 ? '#f59e0b' : '#ef4444' }}/>
+                                    <span className="text-[7px] text-slate-300 dark:text-slate-600 whitespace-nowrap">{d.date.slice(5)}</span>
                                 </div>
                             );
                         })}
@@ -89,46 +95,62 @@ const AttendanceHistory = () => {
             )}
 
             {/* Student summary table */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
                 {loading ? (
-                    <div className="p-12 text-center text-gray-400">Loading…</div>
+                    <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
                 ) : summary.length === 0 ? (
-                    <div className="p-12 text-center text-gray-400 text-sm">No attendance records for this period.</div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[640px]">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider">Student</th>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Present</th>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Late</th>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Absent</th>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Excused</th>
-                                    <th className="px-6 py-3 text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                                {summary.map(s => (
-                                    <tr key={s.student_id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
-                                        <td className="px-6 py-3">
-                                            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{s.name}</p>
-                                            <p className="text-xs text-gray-400">{s.admission_number}</p>
-                                        </td>
-                                        <td className="px-6 py-3 text-center text-sm font-bold text-green-600">{s.present}</td>
-                                        <td className="px-6 py-3 text-center text-sm font-bold text-yellow-600">{s.late}</td>
-                                        <td className="px-6 py-3 text-center text-sm font-bold text-red-500">{s.absent}</td>
-                                        <td className="px-6 py-3 text-center text-sm font-bold text-blue-500">{s.excused}</td>
-                                        <td className="px-6 py-3 text-center">
-                                            <span className={`text-sm font-extrabold ${rateColor(s.rate)}`}>{s.rate}%</span>
-                                            <div className="w-16 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mt-1 overflow-hidden">
-                                                <div className="h-full rounded-full" style={{ width: `${s.rate}%`, background: s.rate >= 90 ? '#22c55e' : s.rate >= 75 ? '#eab308' : '#ef4444' }}/>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-slate-400 text-sm">No attendance records for this period.</p>
                     </div>
+                ) : (
+                    <>
+                        <div className="overflow-auto flex-1">
+                            <table className="w-full text-left border-collapse" style={{ minWidth: 580 }}>
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="bg-slate-800 dark:bg-slate-900 text-white">
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-8">#</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-28">Adm No</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">Student</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-16 text-center">Present</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-12 text-center">Late</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-14 text-center">Absent</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-14 text-center">Excused</th>
+                                        <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 w-20 text-center">Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {summary.map((s, i) => (
+                                        <tr key={s.student_id}
+                                            className={`border-b border-slate-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
+                                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
+                                            }`}>
+                                            <td className="px-3 py-2 text-[11px] font-mono text-slate-300 dark:text-slate-600 select-none">
+                                                {String(i + 1).padStart(2, '0')}
+                                            </td>
+                                            <td className="px-3 py-2 font-mono text-xs text-slate-500 dark:text-slate-400 tracking-wide">
+                                                {s.admission_number}
+                                            </td>
+                                            <td className="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                                {s.name}
+                                            </td>
+                                            <td className="px-3 py-2 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400">{s.present}</td>
+                                            <td className="px-3 py-2 text-center text-xs font-bold text-amber-600 dark:text-amber-400">{s.late}</td>
+                                            <td className="px-3 py-2 text-center text-xs font-bold text-red-500 dark:text-red-400">{s.absent}</td>
+                                            <td className="px-3 py-2 text-center text-xs font-bold text-blue-500 dark:text-blue-400">{s.excused}</td>
+                                            <td className="px-3 py-2 text-center">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${rateBadge(s.rate)}`}>
+                                                    {s.rate}%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex-shrink-0 px-4 py-2 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30">
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{summary.length} student{summary.length !== 1 ? 's' : ''}</p>
+                        </div>
+                    </>
                 )}
             </div>
         </div>
