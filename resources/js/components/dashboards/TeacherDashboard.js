@@ -54,34 +54,6 @@ const TeacherDashboard = () => {
             {/* Main grid */}
             <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
-                {/* Today's schedule */}
-                <div className="w-full md:w-72 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col min-h-0">
-                    <div className="flex-shrink-0 bg-slate-800 dark:bg-slate-900">
-                        <div className="px-4 py-2.5 flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Today's Schedule</span>
-                            <button onClick={() => navigate('/teacher/timetable')}
-                                className="text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/70 transition-colors">
-                                Full →
-                            </button>
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                        {loading ? (
-                            <div className="py-10 text-center text-xs text-slate-400">Loading…</div>
-                        ) : slots.length === 0 ? (
-                            <div className="py-10 text-center text-xs text-slate-400 italic">No classes scheduled.</div>
-                        ) : slots.map((s, i) => (
-                            <div key={i} className={`px-4 py-2.5 border-b border-slate-100 dark:border-gray-700/60 ${
-                                i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/70 dark:bg-gray-900/30'
-                            }`}>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{s.time_slot}</p>
-                                <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{s.subject_name ?? 'Free Period'}</p>
-                                <p className="text-[10px] text-slate-400 font-mono">{s.class_name}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
                 {/* Quick actions */}
                 <div className="flex-1 min-w-0 flex flex-col gap-3">
                     <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
