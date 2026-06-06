@@ -52,9 +52,29 @@ try {
     // Delete Attendances
     DB::table('attendances')->where('school_id', $schoolId)->delete();
 
-    // Get a teacher for the school_id
-    $teacher = User::where('school_id', $schoolId)->where('role', 'teacher')->first();
-    $teacherId = $teacher ? $teacher->id : null;
+    // Create School Admin
+    $admin = User::firstOrCreate(
+        ['email' => 'admin@kasee.sc.ke'],
+        [
+            'name' => 'School Admin',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'school_admin',
+            'school_id' => $schoolId,
+        ]
+    );
+
+    // Create Teacher
+    $teacher = User::firstOrCreate(
+        ['email' => 'teacher@kasee.com'],
+        [
+            'name' => 'Teacher',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'teacher',
+            'school_id' => $schoolId,
+        ]
+    );
+
+    $teacherId = $teacher->id;
 
     echo "Seeding Class Streams (Form 1A, Form 1B, Form 1C)...\n";
     $classesData = [
